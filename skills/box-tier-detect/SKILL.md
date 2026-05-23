@@ -1,9 +1,10 @@
 ---
 name: box-tier-detect
 description: Probe a Box account to detect its tier (Personal, Business, Enterprise, Enterprise Plus) and capability matrix (custom metadata templates, body search, max file size, retention/legal-hold availability). Invoke this internally before any other box-memory operation that depends on tier - most other skills call this skill and read its cached output from _box-memory.json. Also invoke directly when the user asks "what tier am I on", "what can Box do here", or after a Box plan change.
+argument-hint: "[--refresh]"
 ---
 
-# box-tier-detect
+# /box-tier-detect
 
 You probe the Box account that the Box MCP is currently connected to and figure out what capabilities are available. You cache the result so other skills don't have to re-probe.
 

@@ -179,28 +179,56 @@ build_plugin_zip() {
   rm -f "$out"
   clean_appledouble "$REPO_ROOT"
 
-  # Stage in a temp dir so we control exactly what goes in. Cowork Plugins
-  # upload requires the plugin's contents to be at the ZIP ROOT (`.claude-plugin/`
-  # at root, not nested in a `box-memory/` wrapper). For Claude Code, users
-  # extract into a named subdirectory of ~/.claude/plugins/.
+  # Stage in a temp dir so we control exactly what goes in. Layout matches
+  # Anthropic's published Cowork plugins (knowledge-work-plugins) exactly:
+  #
+  #   <root>/
+  #   ├── .claude-plugin/plugin.json
+  #   ├── .mcp.json
+  #   ├── CONNECTORS.md
+  #   ├── LICENSE
+  #   ├── README.md
+  #   └── skills/<name>/SKILL.md      (only SKILL.md per skill, no subdirs)
+  #
+  # Things deliberately NOT included in the plugin zip (Cowork rejects them):
+  #   - per-skill references/ and examples/ subdirs
+  #   - top-level references/, examples/, CHANGELOG.md
+  #   - dist/, scripts/
+  # These live in the repo for developers; they don't ship to Cowork.
   local stage
   stage="$(mktemp -d)"
   trap "rm -rf '$stage'" EXIT
 
-  cp -r .claude-plugin "$stage/"
-  cp -r skills         "$stage/"
-  cp -r references     "$stage/"
-  cp -r examples       "$stage/"
-  cp README.md LICENSE CHANGELOG.md "$stage/"
+  cp -r .claude-plugin   "$stage/"
+  cp    .mcp.json        "$stage/"
+  cp    CONNECTORS.md    "$stage/"
+  cp    LICENSE          "$stage/"
+  cp    README.md        "$stage/"
 
-  ( cd "$stage" && zip -rq "$out" . -x '._*' '.DS_Store' )
+  # Skills: only SKILL.md from each skill dir, no references/ or examples/.
+  mkdir -p "$stage/skills"
+  while IFS= read -r skill_dir; do
+    local name
+    name="$(basename "$skill_dir")"
+    mkdir -p "$stage/skills/$name"
+    cp "$skill_dir/SKILL.md" "$stage/skills/$name/SKILL.md"
+  done < <(discover_skills)
+
+  # Force perms to 0644 files / 0755 dirs (matches Anthropic; Cowork rejects 0700)
+  find "$stage" -type f -exec chmod 0644 {} \;
+  find "$stage" -type d -exec chmod 0755 {} \;
+
+  # Final cleanup before zipping
+  find "$stage" -name '._*' -delete 2>/dev/null || true
+  find "$stage" -name '.DS_Store' -delete 2>/dev/null || true
+
+  # zip -X strips extra attrs; -r recursive; -q quiet
+  ( cd "$stage" && zip -rqX "$out" . -x '._*' '.DS_Store' )
 
   blue "  built box-memory-plugin.zip ($(du -h "$out" | awk '{print $1}'))"
 
-  # Some Cowork upload dialogs accept .plugin extension instead of .zip
-  # (e.g. files produced by the cowork-plugin-customizer skill). Ship both
-  # as identical byte content with different extensions so the user can try
-  # whichever the uploader prefers.
+  # .plugin extension twin — some Cowork upload paths produced by the
+  # cowork-plugin-customizer skill ship .plugin files. Byte-identical to zip.
   local plugin_ext="$DIST_DIR/box-memory-plugin.plugin"
   cp "$out" "$plugin_ext"
   blue "  built box-memory-plugin.plugin ($(du -h "$plugin_ext" | awk '{print $1}'))"

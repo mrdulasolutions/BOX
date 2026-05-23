@@ -4,6 +4,67 @@ All notable changes to box-memory will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2026-05-23
+
+### Fixed — Cowork plugin validation, for real this time
+
+After 8 failed attempts at narrowing the cause, dispatched 5 parallel research agents and ran a minimal-plugin experiment. **The minimal worked.** Cause was the bundle of structural deltas against Anthropic's published Cowork plugins ([anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins)).
+
+Fixes applied to v0.1.9 — all derived from the working minimal:
+
+#### 1. Plugin zip is now lean (was the headline issue)
+
+**Removed from the plugin zip** (still in the repo for developers):
+- `references/` and `examples/` subdirectories inside each skill folder
+- Top-level `references/`, `examples/`, `CHANGELOG.md`, `dist/`, `scripts/`
+
+**Added to the plugin zip:**
+- `.mcp.json` at root (empty `mcpServers` — Box MCP is user-side, not bundled)
+- `CONNECTORS.md` at root (documents the Box MCP dependency)
+
+Plugin zip went from **122 files / 633 KB / 288 KB compressed** to roughly Anthropic's range (~20 files / ~80 KB / ~30 KB compressed). Each skill in the zip is now just `skills/<name>/SKILL.md` — matching Anthropic's pattern exactly.
+
+#### 2. File permissions: 0644 files, 0755 dirs (were 0700)
+
+The repo lives on an external exFAT volume that defaults to 0700 perms via umask. Build script now `chmod 0644` files / `chmod 0755` dirs before zipping. `zip -X` flag strips extended attrs that can carry the wrong perms.
+
+#### 3. SKILL.md body H1 with leading slash
+
+All 8 skills changed body header from `# box-init` to `# /box-init` (and likewise for the others). Matches the slash-form pattern Anthropic uses; our previous `# skill-name` matched 0 of 212 Anthropic skills surveyed.
+
+#### 4. `argument-hint` added to every SKILL.md frontmatter
+
+Anthropic skills that take arguments include this field. All 8 of ours now declare their expected argument shape.
+
+### What was NOT the cause (ruled out by the minimal experiment)
+
+- Plugin name (`box-memory` is fine; doesn't hit reserved prefixes)
+- Manifest field count (your `reva-turbo` has more fields and works)
+- `plugin.json.description` length (the 224-char description from v0.1.8 stays)
+- Unicode in descriptions (Anthropic uses unicode freely)
+- Manifest absent fields like `homepage`, `repository`, `license`, `keywords`
+
+### What still ships separately
+
+Cowork accepts per-skill `references/` and `examples/` subdirs for **personal-skills** upload (one zip per skill). The build still produces individual skill zips in `dist/skills/*.zip` with those subdirs intact, for that upload path. Only the **full plugin zip** strips them to match Cowork's stricter plugin-upload validation.
+
+### How to upgrade
+
+1. Uninstall the existing failing v0.1.x "Box memory" plugin from Cowork (admin → Plugins → remove).
+2. Download `box-memory-plugin.zip` from the v0.1.9 release.
+3. Cowork → Plugins → Add plugin → upload.
+
+For Claude Code installs that worked in earlier versions: `git pull` or re-extract the new zip.
+
+### Diagnostic methodology (for the next person hitting this)
+
+The right way to debug "plugin validation failed" in Cowork:
+1. Build a minimal plugin matching Anthropic's `knowledge-work-plugins` structure exactly (one skill, no subdirs, .mcp.json + CONNECTORS.md, 0644 perms, slash-form H1).
+2. If it passes: gradually re-add features until it breaks. That's your trigger.
+3. If it fails: probably the Cowork backend bug ([claude-code#24328](https://github.com/anthropics/claude-code/issues/24328)), try the GitHub marketplace install workaround ([#39400](https://github.com/anthropics/claude-code/issues/39400)).
+
+The `box-memory-minimal.zip` from v0.1.8 release is the reproducer that worked.
+
 ## [0.1.8] - 2026-05-23
 
 ### Fixed

@@ -1,9 +1,10 @@
 ---
 name: box-index-rebuild
 description: Rebuild a folder's _index.json (or the workspace-root rollup) from scratch by listing the folder and re-reading every memory's frontmatter. Use when an index is suspected stale, drifted, corrupted, or after a bulk Box-side change (manual file upload, file deletion, version replace). Also detects stale file companions whose hash no longer matches the binary. Invoke when the user says "rebuild the index", "refresh the index", "fix the index", "check companion freshness", or runs /box-index-rebuild.
+argument-hint: "[<folder-path>] [--check] [--companions-only] [--team=<name>]"
 ---
 
-# box-index-rebuild
+# /box-index-rebuild
 
 You scan a folder (or the whole workspace), re-read every memory/companion's frontmatter, and write a fresh `_index.json`. The source of truth is always the memory files themselves; the index is derived state. Rebuilding from source is always safe.
 

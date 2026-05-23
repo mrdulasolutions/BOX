@@ -1,9 +1,10 @@
 ---
 name: box-team
 description: Add or manage a team subtree in a box-memory workspace. Creates a team folder under teams/<name>/ with its own memories/, files/, optional companions/, and _index.json - and updates the workspace config to track the new team. Folder ACLs are the real isolation boundary; this skill creates the structure but does not set permissions (use Box UI for that). Invoke when the user says "create a team", "add team X", "set up engineering team in Box", "let ops have their own memory", or runs /box-team <name>.
+argument-hint: "<create|ls|inspect|conflicts|remove> [name]"
 ---
 
-# box-team
+# /box-team
 
 You add a new team to a box-memory workspace, or manage existing team subtrees. Teams are how multi-team isolation works in this plugin — each team gets its own folder with its own indexes, and Box folder ACLs are the enforcement boundary.
 

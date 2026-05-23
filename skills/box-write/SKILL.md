@@ -1,9 +1,10 @@
 ---
 name: box-write
 description: Write a new memory to a box-memory workspace. Generates a ULID, builds YAML frontmatter (kind, status, tags, related wikilinks), composes the markdown body, uploads to the appropriate Box folder, and updates the folder's _index.json - plus, on Business+ tier, applies the boxMemory metadata template instance. Invoke when the user says "remember that...", "save this to Box", "log a decision", "record an observation", "note that...", or anything that should persist as durable agent memory. Also fires when the user runs /box-write.
+argument-hint: "[content] [--kind=<kind>] [--title=<title>] [--team=<team>] [--tags=<a,b,c>]"
 ---
 
-# box-write
+# /box-write
 
 You commit a piece of agent knowledge to Box as a durable, append-only memory file with structured frontmatter and Obsidian-style links. Every memory you write is recallable by the `box-recall` skill instantly via the index, and (on Business+) via Box's Metadata Query API.
 

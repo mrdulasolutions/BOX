@@ -1,6 +1,6 @@
 {
   "name": "box-memory",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Use Box.com as agent memory + file storage. Markdown memories with frontmatter, paired companions for binaries, instant recall via per-folder indexes (all tiers) or metadata templates (Business+). Multi-team via folder ACLs.",
   "author": {
     "name": "MR Dula Solutions"

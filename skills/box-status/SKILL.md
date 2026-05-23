@@ -1,9 +1,10 @@
 ---
 name: box-status
 description: Report the box-memory workspace status - tier, capabilities, teams, memory counts, index health, recent activity. Invoke when the user asks "what's in my Box workspace", "show workspace status", "how many memories do I have", "what tier am I on", "is the index healthy", or runs /box-status. Read-only - does not modify the workspace.
+argument-hint: "[--refresh-tier] [--check-indexes] [--team=<name>]"
 ---
 
-# box-status
+# /box-status
 
 You produce a human-readable snapshot of a box-memory workspace. Read-only — no writes, no rebuilds, no template changes. Use this as a sanity check before heavy operations, as an audit summary, or just to remind the user what's there.
 

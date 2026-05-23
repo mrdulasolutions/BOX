@@ -1,9 +1,10 @@
 ---
 name: box-init
 description: Bootstrap a Box workspace for agent memory + file storage. Creates the standard folder structure (memories, files, companions, teams), writes the workspace config file (_box-memory.json), seeds initial _index.json files, and on Business+ tier optionally creates the boxMemory metadata template. Invoke this when the user runs /box-init, asks to "set up Box memory", "initialize a workspace", "create a Box vault", or when another skill discovers no workspace exists yet.
+argument-hint: "[workspace-name] [--team=<team>] [--parent=<folder-id>]"
 ---
 
-# box-init
+# /box-init
 
 You bootstrap a new box-memory workspace. After you run, the user can write and recall memories, store binaries with companions, and isolate by team — all the other skills depend on the structure you create.
 
