@@ -72,6 +72,7 @@ Build the config object following `references/schema.md`:
   "tier_detected_at": "<ISO now>",
   "capabilities": { ... from tier detect ... },
   "metadata_template_key": null,
+  "metadata_template_created_at": null,
   "teams": ["<default-team>"],
   "agents": ["<the current agent's identifier, e.g. claude-code>"],
   "settings": {
@@ -167,11 +168,18 @@ fields:
   - {key: updated_at,            displayName: Updated,              type: date}
 ```
 
-Set `metadata_template_key` in `_box-memory.json` to `"boxMemory"` after success. Update the config in Box.
+Set `metadata_template_key` in `_box-memory.json` to `"boxMemory"` after success. Also set `metadata_template_created_at` to the current ISO timestamp — `box-memory-recall` checks this to know whether the template is still in its ~10 min warm-up window. Update the config in Box.
 
-If template creation fails with 403 (user is Business+ but not admin), surface: *"Your Box plan supports metadata templates, but the current user can't create them. Have a Box admin create the `boxMemory` template (see `references/schema.md`), or proceed with index-file mode (slightly slower recall on large workspaces)."*
+**Surface the warm-up window to the user.** When you report setup success, include: *"Metadata template `boxMemory` created. Bulk `mdfilters` queries may take ~10 minutes to return correct results for freshly-applied template instances (a Box behavior, not a plugin bug). Direct file fetches and `_index.json` recall work immediately. During the warm-up window, recall automatically falls back to index files."* See [references/operational-notes.md Note 3](references/operational-notes.md).
+
+If template creation fails with 403 (user is Business+ but not admin OR token scope is stale), surface a two-option message:
+
+1. *"Your Box plan supports metadata templates. If you recently upgraded your Box account, your OAuth token may be scoped to the old plan. Disconnect and reconnect the Box MCP in your platform's settings to get a fresh token, then re-run setup."* See [references/operational-notes.md Note 2](references/operational-notes.md).
+2. *"If the current user is genuinely a non-admin on a Business+ account, have a Box admin create the `boxMemory` template (see [references/schema.md](references/schema.md)) or proceed with index-file mode."*
 
 If `capabilities.custom_metadata_templates` is false (Personal tier), skip this step entirely. Recall via index files is the primary path on Personal.
+
+**Note on alternate template names:** This skill creates the canonical `boxMemory` template. If you encounter a workspace where the live deployment uses a different name (e.g. `agentMemory`), the plugin honors whatever `metadata_template_key` is set in `_box-memory.json` — you don't have to migrate immediately. See [references/operational-notes.md Note 6](references/operational-notes.md) for migration guidance.
 
 ### Step 8 — Write a workspace README
 

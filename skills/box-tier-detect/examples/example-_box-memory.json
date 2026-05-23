@@ -22,6 +22,7 @@
     "compliance": []
   },
   "metadata_template_key": null,
+  "metadata_template_created_at": null,
   "teams": ["default"],
   "agents": ["claude-code"],
   "settings": {

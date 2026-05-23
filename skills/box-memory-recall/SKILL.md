@@ -72,21 +72,36 @@ If the query is a wikilink target or slug:
 
 Build the filter set from the query.
 
-**Business+ path — Metadata Query API:**
+**Business+ path — metadata-filtered keyword search:**
 
 If `capabilities.custom_metadata_templates` is true and `metadata_template_key` is set:
 
-Call Box's Metadata Query API with a SQL-like predicate on the `boxMemory` template. Examples:
+Call `search_files_keyword` with the `mdfilters` parameter. **Do not call the dedicated `search_files_metadata` tool** — it returns empty results in current Box MCP implementations (see [references/operational-notes.md Note 1](references/operational-notes.md)).
 
-- `kind = "decision" AND status = "active"`
-- `tags LIKE "%auth%"` (tags is comma-separated string in the template)
-- `team = "engineering" AND created_at > "2026-01-01"`
+The query parameter must be non-empty. Pass `"the"` as a pseudo-wildcard since virtually every memory body contains it. The `mdfilters` parameter does the actual filtering on `<metadata_template_key>` (`boxMemory` canonically, or whatever the workspace declares).
 
-This is instant — no lag, no body-size limit, reflects all writes immediately.
+Example shape:
+
+```text
+search_files_keyword(
+  query: "the",
+  mdfilters: [
+    { templateKey: "boxMemory",
+      filters: { kind: "decision", status: "active" } }
+  ]
+)
+```
+
+This is fast — no Search API indexing lag for already-indexed metadata, no body-size limit, reflects writes immediately *once the template is warm* (see warm-up note below).
+
+**Template warm-up window (first 10 minutes after template creation):** Fresh templates take ~10 minutes before bulk `mdfilters` queries return correct results. If `_box-memory.json` has `metadata_template_created_at` and `now - created_at < 10 min`, **skip this Business+ path and fall through to the index-scan path below**. Tell the user once: *"Skipping metadata query — template still in its ~10 min warm-up window. Using index files for this recall."* See [references/operational-notes.md Note 3](references/operational-notes.md).
+
+**Strict-comparison caveat:** `gt` on float fields is inclusive (`confidence > 0.9` matches `confidence == 0.9`). When the user asks for strict ranges, use a small epsilon: `confidence > 0.9001`. See [references/operational-notes.md Note 5](references/operational-notes.md).
 
 Limitations:
 - Single template per query (the plugin uses one wide template by design).
 - No JOIN-like ops; do post-filter in agent code if needed.
+- The pseudo-wildcard `"the"` only matches files whose searchable body contains the word `the` — true for prose memories, may miss pure-metadata files. If you suspect coverage gaps, fall through to the index-scan path as a verification.
 
 **All tiers path — index scan:**
 

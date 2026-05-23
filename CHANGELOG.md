@@ -4,6 +4,28 @@ All notable changes to box-memory will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-05-23
+
+### Added
+
+- **`references/operational-notes.md`** — six findings from live testing that the canonical docs don't cover: `search_files_metadata` MCP wrapper bug, OAuth scope not widening on tier upgrade, ~10 min metadata-template warm-up window, keyword-search empty-query workaround, `gt` float-comparison inclusivity quirk, and the canonical-vs-live template name discrepancy.
+- **Skills bundle zip** — new artifact `dist/box-memory-skills.zip` containing the full `skills/` directory. Drop into any Claude Code plugin, any agent's skills folder, or unzip and point your agent at it. Sits alongside the existing per-skill zips and the full-plugin zip.
+- **`metadata_template_created_at`** field in workspace config — tracks when the metadata template was created so `box-memory-recall` knows to skip the metadata-query path during the ~10 min warm-up window.
+
+### Changed
+
+- **`box-memory-recall`** Step 4 routes Business+ metadata queries through `search_files_keyword` + `mdfilters` (NOT the broken `search_files_metadata` MCP tool). Passes `"the"` as a non-empty query pseudo-wildcard. Detects template warm-up window and falls through to `_index.json` recall automatically.
+- **`box-setup`** Step 7 surfaces the ~10 min warm-up window to the user, captures `metadata_template_created_at`, and detects stale-OAuth-token symptoms on 403s with a clear reconnect prompt.
+- **`box-tier-detect`** adds detection rules for stale OAuth token vs ambiguous tier — when signals contradict, prefers the stale-token diagnosis since it's more common and the fix is concrete.
+- **`references/architecture.md`** Failure modes table updated with five new rows covering the operational quirks, each cross-referencing `operational-notes.md`.
+- **`references/tier-matrix.md`** universal-caveats section adds the OAuth-reconnect and template-warm-up notes.
+- **`references/schema.md`** Metadata Template section adds an "Operational caveats" subsection and a "Template name in live deployments" note acknowledging the `boxMemory` vs `agentMemory` naming drift.
+
+### Notes
+
+- No behavior changes for Personal-tier users — operational quirks are all on the Business+ metadata path.
+- No breaking changes to the workspace schema. `metadata_template_created_at` is additive and optional; missing-field handling assumes `null`.
+
 ## [0.1.1] - 2026-05-22
 
 ### Added

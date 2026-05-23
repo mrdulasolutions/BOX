@@ -111,7 +111,8 @@ Outputs land in `dist/`:
 
 ```
 dist/
-├── box-memory-plugin.zip       # full Claude Code plugin
+├── box-memory-plugin.zip       # full Claude Code plugin (.claude-plugin/, commands/, skills/, docs)
+├── box-memory-skills.zip       # all 7 skills bundled (skills/<name>/ inside) — drop into any agent
 └── skills/
     ├── box-setup.zip           # individual skill, Cowork-uploadable
     ├── box-tier-detect.zip
@@ -121,6 +122,15 @@ dist/
     ├── box-team-isolate.zip
     └── box-index-rebuild.zip
 ```
+
+### Which artifact do I want?
+
+| Scenario | Artifact |
+|---|---|
+| Installing on Claude Code (one shot) | `box-memory-plugin.zip` |
+| Uploading skills to Cowork (pick which ones) | individual files in `skills/` |
+| Adding to another agent's `skills/` folder | `box-memory-skills.zip` (unzip into your skills dir) |
+| Cherry-picking a single skill into another project | individual file like `skills/box-memory-write.zip` |
 
 ---
 
@@ -353,6 +363,11 @@ See [references/architecture.md](references/architecture.md).
 - **Wikilinks are not validated by Box.** Rename a file → links in other memories silently break. The plugin maintains a `by_wikilink` map in the index; recall uses it.
 - **Custom metadata templates require Business+.** On Personal, fall back to index files (same recall API, slightly slower writes).
 - **Box MCP must be installed and authorized** in your agent platform's MCP configuration (Claude Code, Cowork, or your own setup). The skills do not handle Box auth.
+- **`search_files_metadata` MCP tool is broken in current Box MCP versions** — returns empty results even when data is queryable. The plugin routes around this by using `search_files_keyword + mdfilters` instead.
+- **OAuth token scopes don't widen on Box tier upgrade.** If you upgrade your Box plan and template-create operations 403, disconnect and reconnect the Box MCP to refresh the token.
+- **Fresh metadata templates have a ~10 minute warm-up window** before bulk `mdfilters` queries return correct results — empirically, despite Box docs claiming real-time. Direct file reads work immediately; recall falls back to index files during the warm-up.
+
+For the full operational quirk catalog with workarounds, see [references/operational-notes.md](references/operational-notes.md).
 
 ---
 

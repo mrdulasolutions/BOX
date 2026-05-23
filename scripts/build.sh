@@ -3,10 +3,14 @@
 # build.sh — produce distributable artifacts for box-memory:
 #
 #   dist/box-memory-plugin.zip          full Claude Code plugin
+#   dist/box-memory-skills.zip          all 7 skills bundled (skills/<name>/ inside)
 #   dist/skills/<skill-name>.zip        individual Cowork-uploadable skill zips
 #
-# Each skill zip has SKILL.md at the root (Anthropic skills convention).
-# The plugin zip has .claude-plugin/plugin.json at the root.
+# Each individual skill zip has SKILL.md at the root (Anthropic skills convention).
+# The skills-bundle zip has skills/<name>/SKILL.md inside (drop-in for any agent
+# that points at a skills/ directory).
+# The plugin zip has the plugin directory (box-memory/) at the top level with
+# .claude-plugin/plugin.json inside it.
 #
 # Also runs a drift check: every skill's references/ and examples/ must match
 # the canonical references/ and examples/ at the repo root. Drift exits non-zero.
@@ -144,6 +148,17 @@ build_skill_zip() {
   blue "  built $skill_name.zip ($(du -h "$out" | awk '{print $1}'))"
 }
 
+build_skills_bundle_zip() {
+  local out="$DIST_DIR/box-memory-skills.zip"
+  rm -f "$out"
+  clean_appledouble "$REPO_ROOT/skills"
+
+  # Bundle ships the whole skills/ directory so consumers can drop it into
+  # any plugin or agent setup that expects a skills/ folder.
+  ( cd "$REPO_ROOT" && zip -rq "$out" skills -x '._*' '.DS_Store' )
+  blue "  built box-memory-skills.zip ($(du -h "$out" | awk '{print $1}'))"
+}
+
 build_plugin_zip() {
   local out="$DIST_DIR/box-memory-plugin.zip"
   rm -f "$out"
@@ -218,6 +233,9 @@ main() {
     build_skill_zip "$skill_dir"
   done < <(discover_skills)
 
+  blue "==> building skills-bundle zip"
+  build_skills_bundle_zip
+
   blue "==> building plugin zip"
   build_plugin_zip
 
@@ -229,7 +247,10 @@ main() {
   echo "  Plugin zip (Claude Code):"
   echo "    dist/box-memory-plugin.zip"
   echo
-  echo "  Skill zips (Claude Cowork, or any agent that accepts skill zips):"
+  echo "  Skills bundle (all 7 skills together, drop into a plugin or agent skills dir):"
+  echo "    dist/box-memory-skills.zip"
+  echo
+  echo "  Individual skill zips (Claude Cowork, or any agent that accepts skill zips):"
   while IFS= read -r f; do
     echo "    $f"
   done < <(ls "$SKILL_DIST_DIR"/*.zip 2>/dev/null | sort)

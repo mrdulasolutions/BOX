@@ -62,6 +62,10 @@ These work the same on Personal, Business, Enterprise, and Enterprise Plus:
 
 **Direct ID-based fetch is always instant.** No matter the tier, `GET /files/<id>` is sub-second and reflects the current state. The plugin's index pattern leverages this.
 
+**OAuth token scopes don't widen on tier upgrade.** If you upgrade your account (Personal → Business, etc.) and a template-create or metadata-write operation suddenly 403s, the issue is a stale OAuth token scoped to your old plan's permissions. Disconnect and reconnect the Box MCP to force a fresh token. See [operational-notes.md Note 2](operational-notes.md#2-oauth-token-scope-does-not-widen-on-tier-upgrade).
+
+**Fresh metadata templates have a ~10-minute warm-up window.** Box's docs claim the Metadata Query API is real-time, but empirically a newly-created template needs ~10 minutes before bulk `mdfilters` queries return correct results. Direct file metadata reads work immediately. See [operational-notes.md Note 3](operational-notes.md#3-fresh-metadata-templates-have-a-~10-minute-warm-up-window).
+
 ---
 
 ## How the plugin routes by tier

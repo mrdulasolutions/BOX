@@ -244,6 +244,7 @@ One per workspace, at the workspace root: `_box-memory.json`.
     "compliance": ["soc2", "hipaa", "fedramp-moderate", "..."]
   },
   "metadata_template_key": "<key or null>",
+  "metadata_template_created_at": "<ISO-8601 or null>",
   "teams": ["default", "engineering", "ops"],
   "agents": ["claude-code"],
   "settings": {
@@ -310,6 +311,19 @@ fields:
 ```
 
 Once the template exists, every memory write also applies the template instance to the file, and recall can use the Metadata Query API for instant results (no 10-min lag, no body-size limit). The index file still gets maintained as a fallback and for cross-tier portability.
+
+### Operational caveats when querying by template
+
+Several gotchas apply when using Box's Metadata Query in practice. Each is documented in detail in [operational-notes.md](operational-notes.md); the short version:
+
+- **Use `search_files_keyword` + `mdfilters`, not the dedicated `search_files_metadata` MCP tool.** The dedicated wrapper returns empty results in current implementations. ([Note 1](operational-notes.md#1-search_files_metadata-mcp-wrapper-returns-empty-when-data-exists))
+- **A fresh template has a ~10-minute warm-up.** Box docs say real-time; reality is not. Direct file metadata reads work immediately; bulk filter queries do not. ([Note 3](operational-notes.md#3-fresh-metadata-templates-have-a-~10-minute-warm-up-window))
+- **Keyword search requires a non-empty query.** When you only care about metadata filters, pass `"the"` as a pseudo-wildcard. ([Note 4](operational-notes.md#4-keyword-search-requires-a-non-empty-query-parameter))
+- **`gt` on float fields is inclusive.** `confidence > 0.9` returns `confidence == 0.9` results. Use an epsilon (`> 0.9001`) when strict exclusion matters. ([Note 5](operational-notes.md#5-gt-comparison-on-float-metadata-fields-is-inclusive))
+
+### Template name in live deployments
+
+Canonical name in this repo: **`boxMemory`** (the schema above). At least one deployment in the wild uses `agentMemory` with a slightly simpler schema. The plugin reads `metadata_template_key` from `_box-memory.json` rather than hardcoding the name, so manual overrides work. If you have both templates on the same account, pick one as authoritative and migrate or delete the other — dual templates make recall ambiguous. See [operational-notes.md Note 6](operational-notes.md#6-metadata-template-name-in-live-deployments-may-differ-from-canonical) for migration options.
 
 ---
 

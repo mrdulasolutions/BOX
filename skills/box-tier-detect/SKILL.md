@@ -129,6 +129,11 @@ If you can't confidently determine the tier (e.g. signals conflict, or the user'
 - **Token expired** → "Your Box session expired. Re-authorize Box MCP in your platform's MCP configuration."
 - **Rate limited** → "Box rate-limited the tier-detection probes. Wait 60s and retry."
 - **Conflicting signals** → "Couldn't confidently detect tier. Declare it in `_box-memory.json` (see `references/schema.md`)."
+- **Stale OAuth token after tier upgrade** → Symptom: `list_metadata_templates(scope="enterprise")` returns "user does not have an enterprise" AND `max_upload_size` from quota suggests Business+ AND/OR template-create probe returns 403. Surface: *"Your Box account looks like Business+ (per file-size quota: <N> MB) but template-related operations are denied. If you recently upgraded your Box plan, your OAuth token is still scoped to the old plan — Box doesn't widen scope automatically. Disconnect and reconnect the Box MCP in your platform's settings to get a fresh token with current scope, then re-run."* See [references/operational-notes.md Note 2](references/operational-notes.md).
+
+## Detection rules for stale OAuth scope
+
+When probing the account, if you see signals that *contradict* (e.g. the quota suggests Business+ but enterprise-scope template listing fails), prefer the diagnosis "stale OAuth token" over "ambiguous tier" — it's much more common and the fix is concrete (reconnect MCP). Only conclude "ambiguous tier" when you've ruled out a stale token by asking the user when they last reconnected the Box MCP and whether the account changed plans recently.
 
 ## Don't
 

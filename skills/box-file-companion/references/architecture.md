@@ -164,6 +164,13 @@ Box's Metadata Query API only queries one template at a time. The plugin uses **
 | Metadata template missing (Business+ workspace, template deleted) | Plugin can't apply metadata | Falls back to index-only mode; warns; offers to recreate template. |
 | Box search returns stale results | Returns 0 or wrong results | Plugin warns that search is best-effort and prefers index lookup. |
 | Tier downgrade (account moved Business → Personal) | Template fields can't be applied to new files | Plugin detects on next write, switches to index-only mode, surfaces a one-time message. |
+| `search_files_metadata` MCP tool returns empty when data exists | Bulk metadata queries via the dedicated tool fail | Plugin routes all metadata-filtered queries through `search_files_keyword` + `mdfilters` instead. See [operational-notes.md Note 1](operational-notes.md#1-search_files_metadata-mcp-wrapper-returns-empty-when-data-exists). |
+| OAuth token scope stale after tier upgrade | Template-create or metadata-write 403s after the account upgrade should have unlocked it | Surface a clear "disconnect/reconnect Box MCP" prompt. See [operational-notes.md Note 2](operational-notes.md#2-oauth-token-scope-does-not-widen-on-tier-upgrade). |
+| Fresh metadata template — bulk queries empty for ~10 minutes | Documented as real-time, empirically isn't | Fall through to `_index.json` path during warm-up window. See [operational-notes.md Note 3](operational-notes.md#3-fresh-metadata-templates-have-a-~10-minute-warm-up-window). |
+| `search_files_keyword` rejects empty query parameter | Pure metadata-filter searches fail | Pass a stopword like `"the"` as a pseudo-wildcard. See [operational-notes.md Note 4](operational-notes.md#4-keyword-search-requires-a-non-empty-query-parameter). |
+| `gt` comparison on float metadata fields is inclusive | `confidence > 0.9` matches `confidence == 0.9` | Use an epsilon when strict exclusion matters (e.g. `> 0.9001`). See [operational-notes.md Note 5](operational-notes.md#5-gt-comparison-on-float-metadata-fields-is-inclusive). |
+
+For the complete operational quirk catalog see [references/operational-notes.md](operational-notes.md).
 
 ---
 
