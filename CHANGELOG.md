@@ -4,6 +4,38 @@ All notable changes to box-memory will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7] - 2026-05-23
+
+### Fixed
+
+**Cowork rejected v0.1.6 with "Plugin validation failed"** even though `claude plugin validate` passed. Discovered by inspecting Anthropic's own published Cowork plugins ([anthropics/knowledge-work-plugins](https://github.com/anthropics/knowledge-work-plugins)) — `customer-support`, `engineering`, `legal`, `data`, `design`, `marketing`, `productivity`, `sales` — every one uses the **same 4-field minimal `plugin.json`**:
+
+```json
+{
+  "name": "plugin-name",
+  "version": "1.2.0",
+  "description": "...",
+  "author": { "name": "Anthropic" }
+}
+```
+
+No `homepage`, `repository`, `license`, `keywords`, `author.email`, `author.url`. Anthropic's `create-cowork-plugin` skill confirms: *"Minimal required field is `name`. Full recommended structure: name + version + description + author.name."*
+
+The official `schemastore.org/claude-code-plugin-manifest.json` schema permits all those extra fields, and so does `claude plugin validate`. But Cowork's runtime validator is stricter than both — it rejects manifests with fields beyond the minimal pattern.
+
+- **Stripped `plugin.json` to the 4-field Cowork-compatible pattern.** Moved `homepage`, `repository`, `license`, `keywords` to the README where they're more discoverable for humans anyway. Removed `author.email` and `author.url` for the same reason.
+
+### Validation methodology improved
+
+The local `claude plugin validate` CLI is necessary but not sufficient for Cowork. Going forward, the canonical reference is **comparing against Anthropic's own working plugins**. The repo `anthropics/knowledge-work-plugins` is the source of truth for what Cowork accepts. Schema docs (schemastore + plugins-reference) describe the spec; Anthropic's plugins demonstrate what passes Cowork's runtime check.
+
+### Compatibility
+
+- No skill, schema, or behavior changes from v0.1.6.
+- Per-skill zip names unchanged from v0.1.5.
+- If you successfully installed v0.1.6 in Claude Code, v0.1.7 works identically there — the dropped manifest fields were optional metadata Claude Code ignored anyway.
+- For Cowork: uninstall the previous failed upload first, then upload `box-memory-plugin.zip` from v0.1.7.
+
 ## [0.1.6] - 2026-05-23
 
 ### Fixed
