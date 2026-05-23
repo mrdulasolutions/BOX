@@ -2,11 +2,12 @@
 
 **Use Box.com as agent memory + file storage. For any AI agent.**
 
-A skill bundle that turns any Box account into a durable, multi-team, audit-friendly memory substrate. Ships in three forms so any agent can use it:
+A skill bundle that turns any Box account into a durable, multi-team, audit-friendly memory substrate. Ships in four forms so any agent platform can use it:
 
-- **Claude Code plugin** — one git clone, all skills and `/box-*` commands available.
-- **Claude Cowork skills** — per-skill `.zip` artifacts, uploaded individually via Cowork's skill settings.
-- **Generic skills bundle** — point any agent (Codex, Cursor, OpenClaw, custom SDKs) at the skill directories; each `SKILL.md` is self-contained.
+- **Claude Code plugin** — git clone or unzip into `~/.claude/plugins/box-memory/`. All skills and `/box-*` commands available.
+- **Claude Cowork plugin** (admin) — upload `box-memory-plugin.zip` via Cowork → Plugins → Add plugin. All skills available org-wide.
+- **Claude Cowork skills** (personal) — upload individual `box-<skill>.zip` files via Cowork → Settings → Skills → Upload skill. Pick which skills you want.
+- **Any other agent** — point your agent at the skill directories (`skills/box-setup/SKILL.md`, etc.). Each skill is self-contained.
 
 Markdown memories with YAML frontmatter and Obsidian-style wikilinks. Every binary file gets a paired companion `.md` so agents can recall what a file is *without* chunking it into a vector store. Instant lookup via per-folder index files (works on every Box tier) or Box metadata templates (Business+).
 
@@ -41,7 +42,7 @@ The plugin adds the agent-memory layer on top: schema, index, companions, recall
 
 ## Installation
 
-Three install paths cover Claude Code, Claude Cowork, and any other agent platform. Pick the one that fits.
+Four install paths cover Claude Code, Claude Cowork (admin plugin + personal skills), and any other agent platform. Pick the one that fits.
 
 ### Prerequisites (all paths)
 
@@ -50,44 +51,58 @@ Three install paths cover Claude Code, Claude Cowork, and any other agent platfo
 
 ### Path 1 — Claude Code (plugin)
 
+Option A: git clone directly into the plugins directory:
+
 ```bash
 git clone https://github.com/mrdulasolutions/BOX.git ~/.claude/plugins/box-memory
 ```
 
-Or install from a downloaded zip:
+Option B: download and unzip into a named subdirectory (the plugin zip is flat, so you must specify the target name):
 
 ```bash
+mkdir -p ~/.claude/plugins/box-memory
 curl -L -o /tmp/box-memory-plugin.zip \
   https://github.com/mrdulasolutions/BOX/releases/latest/download/box-memory-plugin.zip
-unzip /tmp/box-memory-plugin.zip -d ~/.claude/plugins/
+unzip /tmp/box-memory-plugin.zip -d ~/.claude/plugins/box-memory/
 ```
 
 After install, the seven skills and `/box-*` slash commands are available in Claude Code.
 
-### Path 2 — Claude Cowork (per-skill zips)
+### Path 2 — Claude Cowork plugin (admin, recommended for orgs)
 
-Cowork accepts skills as individual `.zip` files. The build produces one zip per skill — upload only the skills you want.
+Cowork accepts the same plugin format as Claude Code. The plugin zip works in both — one install, all skills + commands available to every user in your org.
 
-```bash
-# Build the skill zips locally
-git clone https://github.com/mrdulasolutions/BOX.git
-cd BOX
-./scripts/build.sh
+1. Download `box-memory-plugin.zip` from the [latest release](https://github.com/mrdulasolutions/BOX/releases/latest).
+2. In Cowork (as an org admin), go to **Cowork settings → Plugins → Add plugin**.
+3. Drag the zip in, or click and select the file.
+4. Once installed, every user in your org gets the plugin's seven skills and `/box-*` commands.
 
-# Skill zips land in dist/skills/
-ls dist/skills/
-# → box-setup.zip, box-tier-detect.zip, box-memory-write.zip,
-#   box-memory-recall.zip, box-file-companion.zip,
-#   box-team-isolate.zip, box-index-rebuild.zip
-```
+**Requirements** (per Cowork's docs): zip must be ≤50 MB and have a plugin name in lowercase-hyphenated form — `box-memory` matches. The plugin zip's contents are at the zip root (`.claude-plugin/plugin.json` at root, plus `skills/`, `commands/`, etc.) as Cowork expects.
 
-Or download pre-built zips from the [latest release](https://github.com/mrdulasolutions/BOX/releases/latest). Then in Cowork, go to **Settings → Skills → Upload Skill** and drop each `.zip` you want.
+### Path 3 — Claude Cowork personal skills (any user)
 
-Slash commands aren't supported in Cowork — only skills. The skills auto-fire when the user asks something matching their `description` field, so you usually don't need commands.
+If you don't have admin rights, or you only want a subset of the skills, upload them individually as personal skills.
 
-### Path 3 — Any other agent (Codex, Cursor, OpenClaw, custom SDK)
+1. Download the individual skill zips from the [latest release](https://github.com/mrdulasolutions/BOX/releases/latest):
+   - `box-setup.zip`
+   - `box-tier-detect.zip`
+   - `box-memory-write.zip`
+   - `box-memory-recall.zip`
+   - `box-file-companion.zip`
+   - `box-team-isolate.zip`
+   - `box-index-rebuild.zip`
+2. In Cowork, go to **Settings → Skills → Upload skill**.
+3. Drop each `.zip` you want. Cowork unpacks each as a self-contained skill.
 
-Each skill is a self-contained directory: `SKILL.md` + `references/` + `examples/`. Any agent that can read `SKILL.md` and follow its instructions can use these skills.
+Each per-skill zip contains a folder matching the skill name (e.g., `box-setup/SKILL.md` inside `box-setup.zip`) — the format Cowork's skill uploader requires.
+
+**Recommended upload order** if you want to test the minimum useful set first: `box-setup` → `box-tier-detect` → `box-memory-write` → `box-memory-recall`. Add the rest as you need them.
+
+Slash commands aren't available via personal skills — only when the full plugin is installed (Path 1 or 2). The skills still auto-fire from their `description` field when the user asks something matching.
+
+### Path 4 — Any other agent (Codex, Cursor, OpenClaw, custom SDK)
+
+Each skill directory is self-contained: `SKILL.md` + `references/` + `examples/`. Any agent that can read `SKILL.md` and follow its instructions can use these.
 
 ```bash
 git clone https://github.com/mrdulasolutions/BOX.git
@@ -97,12 +112,14 @@ ls skills/
 #   box-team-isolate/  box-tier-detect/  box-index-rebuild/
 ```
 
-The Anthropic Skills SDK and most agent frameworks accept this format directly. If your platform uses a different skill convention, the SKILL.md content is plain markdown instructions you can adapt or prepend to your system prompt.
+For agents that accept the Anthropic Skills format directly, use the per-skill zips from the release.
+
+For agents that expect a `skills/` directory to drop in, use `box-memory-skills.zip` from the release — it unzips to a `skills/` directory with all 7 skill subdirectories inside.
 
 ### Building from source
 
 ```bash
-./scripts/build.sh              # build plugin zip + all skill zips
+./scripts/build.sh              # build all artifacts
 ./scripts/build.sh --check      # verify per-skill refs match canonical (no zip)
 ./scripts/build.sh --sync       # force-sync canonical refs into skills, then build
 ```
@@ -111,10 +128,10 @@ Outputs land in `dist/`:
 
 ```
 dist/
-├── box-memory-plugin.zip       # full Claude Code plugin (.claude-plugin/, commands/, skills/, docs)
-├── box-memory-skills.zip       # all 7 skills bundled (skills/<name>/ inside) — drop into any agent
+├── box-memory-plugin.zip       # Cowork Plugins upload + Claude Code (flat, .claude-plugin/ at root)
+├── box-memory-skills.zip       # all 7 skills bundled as skills/<name>/ (drop into any agent)
 └── skills/
-    ├── box-setup.zip           # individual skill, Cowork-uploadable
+    ├── box-setup.zip           # Cowork Skills upload (wrapped: box-setup/SKILL.md inside)
     ├── box-tier-detect.zip
     ├── box-memory-write.zip
     ├── box-memory-recall.zip
@@ -123,14 +140,15 @@ dist/
     └── box-index-rebuild.zip
 ```
 
-### Which artifact do I want?
+### Which artifact for which install?
 
-| Scenario | Artifact |
-|---|---|
-| Installing on Claude Code (one shot) | `box-memory-plugin.zip` |
-| Uploading skills to Cowork (pick which ones) | individual files in `skills/` |
-| Adding to another agent's `skills/` folder | `box-memory-skills.zip` (unzip into your skills dir) |
-| Cherry-picking a single skill into another project | individual file like `skills/box-memory-write.zip` |
+| Scenario | Artifact | Zip shape |
+|---|---|---|
+| Claude Code plugin install | `box-memory-plugin.zip` | Flat (.claude-plugin/, skills/, commands/ at zip root) |
+| Cowork org plugin install (admin) | `box-memory-plugin.zip` | Same flat shape — Cowork uses Claude Code plugin format |
+| Cowork personal skill upload | individual `skills/<name>.zip` | Wrapped (`<name>/SKILL.md` inside) — Cowork Skills requirement |
+| Drop into another agent's skills folder | `box-memory-skills.zip` | Wrapped as `skills/<name>/...` — drop-in for any agent |
+| Adapt one skill into another project | individual `skills/<name>.zip` | Per-skill self-contained kit |
 
 ---
 

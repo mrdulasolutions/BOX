@@ -1,16 +1,28 @@
 #!/usr/bin/env bash
 #
-# build.sh — produce distributable artifacts for box-memory:
+# build.sh — produce distributable artifacts for box-memory.
 #
-#   dist/box-memory-plugin.zip          full Claude Code plugin
-#   dist/box-memory-skills.zip          all 7 skills bundled (skills/<name>/ inside)
-#   dist/skills/<skill-name>.zip        individual Cowork-uploadable skill zips
+# Zip shape rules (verified against Claude docs, May 2026):
 #
-# Each individual skill zip has SKILL.md at the root (Anthropic skills convention).
-# The skills-bundle zip has skills/<name>/SKILL.md inside (drop-in for any agent
-# that points at a skills/ directory).
-# The plugin zip has the plugin directory (box-memory/) at the top level with
-# .claude-plugin/plugin.json inside it.
+# - Cowork Plugins upload requires the zip to contain `.claude-plugin/plugin.json`
+#   at the ZIP ROOT, with `skills/`, `commands/`, etc. also at root — no wrapping
+#   directory. (Quote from docs: "All other directories must be at the plugin
+#   root.")
+#
+# - Cowork Skills upload requires the zip to contain a folder named exactly the
+#   skill name, with `SKILL.md` inside that folder. (Quote from docs: "The ZIP
+#   should contain the Skill folder as its root.")
+#
+# Outputs:
+#
+#   dist/box-memory-plugin.zip     FLAT plugin zip — Cowork Plugins + Claude Code
+#                                  Root: .claude-plugin/, skills/, commands/, ...
+#
+#   dist/box-memory-skills.zip     All skills bundled as skills/<name>/...
+#                                  Drop-in for an agent that points at skills/
+#
+#   dist/skills/<name>.zip         WRAPPED per-skill zip — Cowork Skills upload
+#                                  Root: <skill-name>/SKILL.md, <skill-name>/references/, ...
 #
 # Also runs a drift check: every skill's references/ and examples/ must match
 # the canonical references/ and examples/ at the repo root. Drift exits non-zero.
@@ -144,7 +156,10 @@ build_skill_zip() {
   clean_appledouble "$skill_dir"
   rm -f "$out"
 
-  ( cd "$skill_dir" && zip -rq "$out" . -x '._*' '.DS_Store' )
+  # Cowork Skills upload requires the zip to contain a folder named after the
+  # skill (e.g. box-setup/SKILL.md), not SKILL.md at the zip root. We zip from
+  # the parent so the directory name is preserved inside the archive.
+  ( cd "$(dirname "$skill_dir")" && zip -rq "$out" "$skill_name" -x '._*' '.DS_Store' )
   blue "  built $skill_name.zip ($(du -h "$out" | awk '{print $1}'))"
 }
 
@@ -164,22 +179,22 @@ build_plugin_zip() {
   rm -f "$out"
   clean_appledouble "$REPO_ROOT"
 
-  # Stage in a temp dir so we control exactly what goes in.
+  # Stage in a temp dir so we control exactly what goes in. Cowork Plugins
+  # upload requires the plugin's contents to be at the ZIP ROOT (`.claude-plugin/`
+  # at root, not nested in a `box-memory/` wrapper). For Claude Code, users
+  # extract into a named subdirectory of ~/.claude/plugins/.
   local stage
   stage="$(mktemp -d)"
   trap "rm -rf '$stage'" EXIT
 
-  mkdir -p "$stage/box-memory"
-  cp -r .claude-plugin "$stage/box-memory/"
-  cp -r skills         "$stage/box-memory/"
-  cp -r commands       "$stage/box-memory/"
-  cp -r references     "$stage/box-memory/"
-  cp -r examples       "$stage/box-memory/"
-  cp README.md LICENSE CHANGELOG.md "$stage/box-memory/"
+  cp -r .claude-plugin "$stage/"
+  cp -r skills         "$stage/"
+  cp -r commands       "$stage/"
+  cp -r references     "$stage/"
+  cp -r examples       "$stage/"
+  cp README.md LICENSE CHANGELOG.md "$stage/"
 
-  # Plugin zip has the plugin directory at the top level so users can unzip
-  # into ~/.claude/plugins/ and get a usable directory.
-  ( cd "$stage" && zip -rq "$out" box-memory -x '._*' '.DS_Store' )
+  ( cd "$stage" && zip -rq "$out" . -x '._*' '.DS_Store' )
 
   blue "  built box-memory-plugin.zip ($(du -h "$out" | awk '{print $1}'))"
 }
