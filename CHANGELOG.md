@@ -4,6 +4,47 @@ All notable changes to box-memory will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.8] - 2026-05-23
+
+### Fixed
+
+**My v0.1.7 theory ("Cowork wants a minimal 4-field manifest") was wrong.** Disproven empirically by comparing against the user's own Cowork environment: their `reva-turbo` plugin is installed and working with `homepage`, `repository`, `license`, `keywords`, `mcpServers`, and more — so extra fields are not the problem.
+
+The actual cause, found by measuring description lengths across all 14 plugins installed in that Cowork:
+
+- Box-memory `plugin.json.description`: 352 chars (v0.1.7) — **rejected**
+- Longest installed plugin description (apollo): 305 chars — accepted
+- Anthropic's plugins: 150–200 chars — all accepted
+- Strong empirical signal: Cowork's `plugin.json.description` cap is somewhere in the 256–320 char range
+
+This is the kind of validation rule that isn't in any published spec — it's only visible by comparing against what works. My local `claude plugin validate` doesn't enforce it. The official schemastore schema doesn't enforce it. Anthropic's `create-cowork-plugin` skill doesn't document it. Cowork's runtime validator enforces it silently.
+
+### Changes
+
+- **Rewrote `plugin.json.description` to 224 chars** (down from 352). Preserves "what the plugin does" while staying under the empirical Cowork cap.
+- **Added `.plugin` extension twin** alongside the `.zip`. Per [GitHub issue #28337](https://github.com/anthropics/claude-code/issues/28337), some Cowork upload paths produced by the `cowork-plugin-customizer` skill ship `.plugin` extension files. Build now ships both `dist/box-memory-plugin.zip` and `dist/box-memory-plugin.plugin` (identical bytes, different filename). Try `.zip` first; if the uploader rejects the extension, try `.plugin`.
+
+### What was *not* changed
+
+The minimal-manifest strip from v0.1.7 is preserved (still only `name`, `version`, `description`, `author.name`) because:
+
+- It validates clean in Code, the schemastore schema, and Cowork's parser.
+- Removing the unused metadata fields didn't break anything in v0.1.7 — they just weren't the cause of validation failure.
+- Adding them back now would muddy the diff and re-introduce noise without benefit. (Metadata for human discovery lives in README.)
+
+### How to test
+
+1. **Uninstall the failing prior version from Cowork** (any `Box memory` entry showing "Plugin validation failed").
+2. Download `box-memory-plugin.zip` from the v0.1.8 release.
+3. Cowork → Plugins → Add plugin → drop the `.zip`.
+4. If the upload dialog rejects the extension, download `box-memory-plugin.plugin` instead and retry.
+
+If it *still* fails in v0.1.8 with the shorter description, the next theory to test is dropping the top-level `examples/` and `references/` from the plugin zip (each skill already has its own copies, so the root duplicates are redundant — and might be triggering an unrelated check on file count or size).
+
+### Lessons
+
+The canonical Cowork-compat check is "compare against plugins that actually work in the target Cowork environment". Spec docs describe what's *permitted*; running installations show what's *actually accepted*. Including character-length caps that aren't anywhere in the spec but are enforced at runtime.
+
 ## [0.1.7] - 2026-05-23
 
 ### Fixed

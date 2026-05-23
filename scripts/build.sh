@@ -196,6 +196,14 @@ build_plugin_zip() {
   ( cd "$stage" && zip -rq "$out" . -x '._*' '.DS_Store' )
 
   blue "  built box-memory-plugin.zip ($(du -h "$out" | awk '{print $1}'))"
+
+  # Some Cowork upload dialogs accept .plugin extension instead of .zip
+  # (e.g. files produced by the cowork-plugin-customizer skill). Ship both
+  # as identical byte content with different extensions so the user can try
+  # whichever the uploader prefers.
+  local plugin_ext="$DIST_DIR/box-memory-plugin.plugin"
+  cp "$out" "$plugin_ext"
+  blue "  built box-memory-plugin.plugin ($(du -h "$plugin_ext" | awk '{print $1}'))"
 }
 
 # ----- main -----
@@ -270,8 +278,9 @@ main() {
   total_size="$(du -sh "$DIST_DIR" | awk '{print $1}')"
   echo "  dist/ total: $total_size"
   echo
-  echo "  Plugin zip (Claude Code):"
-  echo "    dist/box-memory-plugin.zip"
+  echo "  Plugin (Claude Code, Cowork Plugins admin upload):"
+  echo "    dist/box-memory-plugin.zip      (try this first)"
+  echo "    dist/box-memory-plugin.plugin   (same bytes, different extension; try if .zip is rejected)"
   echo
   local skill_count
   skill_count="$(discover_skills | wc -l | tr -d ' ')"
