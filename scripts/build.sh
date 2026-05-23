@@ -204,7 +204,19 @@ build_plugin_zip() {
 main() {
   command -v zip >/dev/null || die "zip not installed (brew install zip on macOS, apt install zip on Linux)"
 
-  blue "==> validating skills"
+  blue "==> validating manifest + skills (claude plugin validate)"
+  if command -v claude >/dev/null 2>&1; then
+    if ! claude plugin validate "$REPO_ROOT" 2>&1 | tee /tmp/box-memory-validate.log | grep -q "Validation passed"; then
+      red "  claude plugin validate failed:"
+      cat /tmp/box-memory-validate.log | sed 's/^/    /'
+      die "fix the validation errors above before building zips"
+    fi
+    green "  claude plugin validate: passed"
+  else
+    yellow "  WARN: 'claude' CLI not found — skipping plugin validate (install Claude Code to enable)"
+  fi
+
+  blue "==> validating skill structure"
   while IFS= read -r skill_dir; do
     validate_skill "$skill_dir"
   done < <(discover_skills)

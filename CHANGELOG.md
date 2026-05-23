@@ -4,6 +4,37 @@ All notable changes to box-memory will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2026-05-23
+
+### Fixed
+
+`claude plugin validate` failed on the manifest and one SKILL.md in v0.1.0–v0.1.3. The plugin would not install in Claude Code or upload to Cowork. Both errors fixed:
+
+- **`plugin.json` — `repository` was an object, must be a string.** The npm-style `{type: "git", url: "..."}` shape was wrong. Per the [Claude Code plugin reference](https://code.claude.com/docs/en/plugins-reference), `repository` is a `string` containing the source URL. Wrong-type fields are a hard load error.
+
+  ```diff
+  - "repository": {
+  -   "type": "git",
+  -   "url": "https://github.com/mrdulasolutions/BOX.git"
+  - }
+  + "repository": "https://github.com/mrdulasolutions/BOX"
+  ```
+
+- **`skills/box-memory-recall/SKILL.md` — YAML frontmatter parse failure.** The description contained the substring `lag: tries` — YAML interpreted `lag:` as a new key/value pair, breaking the description string. Replaced the colon with an em-dash so the description stays a plain scalar.
+
+### Verified
+
+```text
+$ claude plugin validate .
+Validating plugin manifest: /.claude-plugin/plugin.json
+✔ Validation passed
+```
+
+### Notes
+
+- All earlier releases (v0.1.0–v0.1.3) would fail `claude plugin validate` and not install. v0.1.4 is the first installable release. If you tried to install any earlier version and got "plugin validation failed," that's why.
+- No skill content or schema changes from v0.1.3. Only the manifest and one description string were edited.
+
 ## [0.1.3] - 2026-05-23
 
 ### Fixed

@@ -1,16 +1,13 @@
 {
   "name": "box-memory",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Use Box.com as agent memory + file storage. Markdown memories with YAML frontmatter and Obsidian-style wikilinks, paired companion .md for every binary, instant recall via per-folder index files (Personal tier) or Box metadata templates (Business+). Auto-detects account tier and routes to the best available strategy. Multi-team aware via folder ACLs.",
   "author": {
     "name": "MR Dula Solutions",
     "url": "https://github.com/mrdulasolutions"
   },
   "homepage": "https://github.com/mrdulasolutions/BOX",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mrdulasolutions/BOX.git"
-  },
+  "repository": "https://github.com/mrdulasolutions/BOX",
   "license": "MIT",
   "keywords": [
     "box",

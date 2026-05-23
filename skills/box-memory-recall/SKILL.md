@@ -1,6 +1,6 @@
 ---
 name: box-memory-recall
-description: Recall memories from a box-memory workspace. Multi-strategy lookup that bypasses Box's 10-minute search indexing lag: tries Box Metadata Query API first (Business+ tier), falls back to per-folder _index.json (every tier), then folder listing, then Box search (last resort with stale-data warning). Returns matching memories ranked by relevance with their IDs, file paths, and content excerpts. Invoke when the user asks "what do I know about…", "what did we decide…", "find memories tagged…", "recall…", "search my Box memory", "what's in the [team] folder", or runs /box-recall.
+description: Recall memories from a box-memory workspace. Multi-strategy lookup that bypasses Box's 10-minute search indexing lag — tries Box Metadata Query API first (Business+ tier), falls back to per-folder _index.json (every tier), then folder listing, then Box search (last resort with stale-data warning). Returns matching memories ranked by relevance with their IDs, file paths, and content excerpts. Invoke when the user asks "what do I know about…", "what did we decide…", "find memories tagged…", "recall…", "search my Box memory", "what's in the [team] folder", or runs /box-recall.
 ---
 
 # box-memory-recall
