@@ -4,6 +4,39 @@ All notable changes to box-memory will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2026-05-23
+
+### Fixed
+
+Cowork rejected v0.1.5 with a generic "plugin validation failed" despite Claude Code accepting it. Cowork's manifest/skill validator is stricter than the local `claude plugin validate` CLI; fixed the most likely culprits.
+
+- **Stripped non-ASCII characters from SKILL.md frontmatter `description` fields.** Six of the eight SKILL.md files contained em-dashes (U+2014) and ellipses (U+2026) inside the YAML `description` value. The local `claude plugin validate` accepts these; some strict YAML/manifest validators do not. Replaced with ASCII equivalents (`-`, `...`). Body content keeps its unicode — only the frontmatter values needed cleaning since that's what schema validators parse.
+- **Added `author.email`** for stricter validators that flag missing author contact info. The official schema only requires `author.name`, but some downstream validators flag missing email as a warning that may be treated as an error elsewhere.
+
+### Validation
+
+Verified against both local `claude plugin validate` (Claude Code 2.1.97) and the official [schemastore.org plugin manifest schema](https://www.schemastore.org/claude-code-plugin-manifest.json):
+
+```text
+$ claude plugin validate .
+✔ Validation passed
+
+$ python -m jsonschema (against schemastore.org schema)
+schemastore strict validation: PASSED
+```
+
+### Considered but not shipped
+
+- `$schema` and `displayName` fields are valid per the official schema, but the older `claude plugin validate` CLI (≤ v2.1.142) rejects them as "unrecognized keys" with a hard error. Held off until that's resolved upstream or we know Cowork specifically needs them.
+
+### How to re-test in Cowork
+
+1. **Uninstall** any earlier broken upload from your Cowork settings first (Cowork may cache validation failures by plugin name).
+2. Download the new `box-memory-plugin.zip` from the v0.1.6 release.
+3. Re-upload via Cowork → Plugins → Add plugin.
+
+If validation still fails, paste the **exact** error message — without it I can only guess at the next root cause.
+
 ## [0.1.5] - 2026-05-23
 
 ### Changed

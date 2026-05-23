@@ -1,6 +1,6 @@
 ---
 name: box-status
-description: Report the box-memory workspace status — tier, capabilities, teams, memory counts, index health, recent activity. Invoke when the user asks "what's in my Box workspace", "show workspace status", "how many memories do I have", "what tier am I on", "is the index healthy", or runs /box-status. Read-only — does not modify the workspace.
+description: Report the box-memory workspace status - tier, capabilities, teams, memory counts, index health, recent activity. Invoke when the user asks "what's in my Box workspace", "show workspace status", "how many memories do I have", "what tier am I on", "is the index healthy", or runs /box-status. Read-only - does not modify the workspace.
 ---
 
 # box-status

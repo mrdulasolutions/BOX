@@ -1,6 +1,6 @@
 ---
 name: box-write
-description: Write a new memory to a box-memory workspace. Generates a ULID, builds YAML frontmatter (kind, status, tags, related wikilinks), composes the markdown body, uploads to the appropriate Box folder, and updates the folder's _index.json — plus, on Business+ tier, applies the boxMemory metadata template instance. Invoke when the user says "remember that…", "save this to Box", "log a decision", "record an observation", "note that…", or anything that should persist as durable agent memory. Also fires when the user runs /box-write.
+description: Write a new memory to a box-memory workspace. Generates a ULID, builds YAML frontmatter (kind, status, tags, related wikilinks), composes the markdown body, uploads to the appropriate Box folder, and updates the folder's _index.json - plus, on Business+ tier, applies the boxMemory metadata template instance. Invoke when the user says "remember that...", "save this to Box", "log a decision", "record an observation", "note that...", or anything that should persist as durable agent memory. Also fires when the user runs /box-write.
 ---
 
 # box-write

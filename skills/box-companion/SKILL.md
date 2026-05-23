@@ -1,6 +1,6 @@
 ---
 name: box-companion
-description: Generate a paired companion markdown file for a binary file in Box. The companion describes what the file is — summary, key facts, classification, related memories — pinned to a specific version via SHA256 hash. This is the no-chunking, no-embedding alternative to RAG. Invoke when the user uploads a binary (PDF, CAD, image, Office doc, video) and asks to "remember what this is", "describe this file", "make a companion", "review this file", or when another skill needs companion context for a binary. Also fires when the user runs /box-companion.
+description: Generate a paired companion markdown file for a binary file in Box. The companion describes what the file is - summary, key facts, classification, related memories - pinned to a specific version via SHA256 hash. This is the no-chunking, no-embedding alternative to RAG. Invoke when the user uploads a binary (PDF, CAD, image, Office doc, video) and asks to "remember what this is", "describe this file", "make a companion", "review this file", or when another skill needs companion context for a binary. Also fires when the user runs /box-companion.
 ---
 
 # box-companion
