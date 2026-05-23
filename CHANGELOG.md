@@ -4,6 +4,30 @@ All notable changes to box-memory will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-05-22
+
+### Added
+
+Multi-target distribution. Same skills, three install paths.
+
+- **Claude Cowork support** — each skill ships as a standalone `.zip` artifact uploadable via Cowork's Skills settings. Per-skill zips contain `SKILL.md` at the root alongside copies of `references/` and `examples/`.
+- **Generic-agent support** — each skill directory is self-contained (`SKILL.md` + `references/` + `examples/`). Any agent that reads SKILL.md can use the skills directly without needing the Claude Code plugin format.
+- **Build script** — `scripts/build.sh` produces `dist/box-memory-plugin.zip` (Claude Code) and `dist/skills/<skill>.zip` (per-skill, for Cowork). Includes drift detection that catches when per-skill ref copies diverge from canonical sources.
+- **`--check` mode** for build script — diagnostic-only, verifies drift without writing.
+- **`--sync` mode** for build script — refreshes per-skill copies from canonical refs.
+
+### Changed
+
+- README rewritten with three install paths (Claude Code plugin, Cowork skill zips, generic agent).
+- SKILL.md error messages now reference "your platform's MCP configuration" instead of "Claude settings", staying agent-platform-neutral.
+- `references/architecture.md` updated to acknowledge multi-platform support.
+- Each skill directory now contains its own `references/` and `examples/` subdirectories so the skill zip is self-contained.
+
+### Notes
+
+- No API or skill behavior changes. A workspace created by v0.1.0 is fully compatible with v0.1.1.
+- The `scripts/` directory is new but doesn't affect plugin behavior — it's dev tooling.
+
 ## [Unreleased]
 
 ### Planned for v0.2

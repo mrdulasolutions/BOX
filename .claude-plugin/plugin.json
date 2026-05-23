@@ -1,6 +1,6 @@
 {
   "name": "box-memory",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Use Box.com as agent memory + file storage. Markdown memories with YAML frontmatter and Obsidian-style wikilinks, paired companion .md for every binary, instant recall via per-folder index files (Personal tier) or Box metadata templates (Business+). Auto-detects account tier and routes to the best available strategy. Multi-team aware via folder ACLs.",
   "author": {
     "name": "MR Dula Solutions",

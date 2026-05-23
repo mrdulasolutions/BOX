@@ -16,7 +16,7 @@ You probe the Box account that the Box MCP is currently connected to and figure 
 
 ## Inputs you need
 
-- A connected Box MCP. If Box MCP tools aren't available, surface a clear message: *"Box MCP is not connected. Install and authorize it via Claude settings → Connectors → Box, then re-run."* Stop.
+- A connected Box MCP. If Box MCP tools aren't available, surface a clear message: *"Box MCP is not connected. Install and authorize it via your platform's MCP configuration (e.g., Claude Code/Cowork → Settings → Connectors → Box, or your platform's equivalent), then re-run."* Stop.
 - (Optional) The path or ID of the workspace root, if the user has already run `box-setup`. If you don't have it, you can still detect tier — the workspace is just where you'd cache the result.
 
 ## What you do
@@ -125,8 +125,8 @@ If you can't confidently determine the tier (e.g. signals conflict, or the user'
 
 ## Errors to surface clearly
 
-- **Box MCP not connected** → "Connect Box MCP via Claude settings, then retry."
-- **Token expired** → "Your Box session expired. Re-authorize Box MCP in Claude settings."
+- **Box MCP not connected** → "Connect Box MCP via your platform's MCP configuration, then retry."
+- **Token expired** → "Your Box session expired. Re-authorize Box MCP in your platform's MCP configuration."
 - **Rate limited** → "Box rate-limited the tier-detection probes. Wait 60s and retry."
 - **Conflicting signals** → "Couldn't confidently detect tier. Declare it in `_box-memory.json` (see `references/schema.md`)."
 

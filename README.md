@@ -1,8 +1,14 @@
 # box-memory
 
-**Use Box.com as agent memory + file storage.**
+**Use Box.com as agent memory + file storage. For any AI agent.**
 
-A Claude Code plugin that turns any Box account into a durable, multi-team, audit-friendly memory substrate for AI agents. Markdown memories with YAML frontmatter and Obsidian-style wikilinks. Every binary file gets a paired companion `.md` so agents can recall what a file is *without* chunking it into a vector store. Instant lookup via per-folder index files (works on every tier) or Box metadata templates (Business+).
+A skill bundle that turns any Box account into a durable, multi-team, audit-friendly memory substrate. Ships in three forms so any agent can use it:
+
+- **Claude Code plugin** — one git clone, all skills and `/box-*` commands available.
+- **Claude Cowork skills** — per-skill `.zip` artifacts, uploaded individually via Cowork's skill settings.
+- **Generic skills bundle** — point any agent (Codex, Cursor, OpenClaw, custom SDKs) at the skill directories; each `SKILL.md` is self-contained.
+
+Markdown memories with YAML frontmatter and Obsidian-style wikilinks. Every binary file gets a paired companion `.md` so agents can recall what a file is *without* chunking it into a vector store. Instant lookup via per-folder index files (works on every Box tier) or Box metadata templates (Business+).
 
 ---
 
@@ -35,30 +41,103 @@ The plugin adds the agent-memory layer on top: schema, index, companions, recall
 
 ## Installation
 
-This is a Claude Code plugin. Install it via marketplace, or clone locally and add to your plugins directory.
+Three install paths cover Claude Code, Claude Cowork, and any other agent platform. Pick the one that fits.
 
-### Prerequisites
+### Prerequisites (all paths)
 
-1. **A Box account** — any tier. The plugin auto-detects capabilities and routes accordingly.
-2. **Box MCP connected to Claude Code** — install once via Claude's connector settings. The plugin invokes Box MCP tools under the hood; it does not manage Box auth itself.
+1. **A Box account** — any tier. The bundle auto-detects capabilities and routes accordingly.
+2. **A Box MCP server connected to your agent** — the skills invoke Box MCP tools under the hood; they do not manage Box auth themselves. Available out of the box on Claude Code and Cowork; for other platforms, point your agent at any Box MCP server (e.g., `@anthropic/box-mcp` or your own Box API wrapper).
 
-### Install (local clone)
+### Path 1 — Claude Code (plugin)
 
 ```bash
 git clone https://github.com/mrdulasolutions/BOX.git ~/.claude/plugins/box-memory
 ```
 
-Then in Claude Code, the skills and `/box-*` slash commands become available.
+Or install from a downloaded zip:
+
+```bash
+curl -L -o /tmp/box-memory-plugin.zip \
+  https://github.com/mrdulasolutions/BOX/releases/latest/download/box-memory-plugin.zip
+unzip /tmp/box-memory-plugin.zip -d ~/.claude/plugins/
+```
+
+After install, the seven skills and `/box-*` slash commands are available in Claude Code.
+
+### Path 2 — Claude Cowork (per-skill zips)
+
+Cowork accepts skills as individual `.zip` files. The build produces one zip per skill — upload only the skills you want.
+
+```bash
+# Build the skill zips locally
+git clone https://github.com/mrdulasolutions/BOX.git
+cd BOX
+./scripts/build.sh
+
+# Skill zips land in dist/skills/
+ls dist/skills/
+# → box-setup.zip, box-tier-detect.zip, box-memory-write.zip,
+#   box-memory-recall.zip, box-file-companion.zip,
+#   box-team-isolate.zip, box-index-rebuild.zip
+```
+
+Or download pre-built zips from the [latest release](https://github.com/mrdulasolutions/BOX/releases/latest). Then in Cowork, go to **Settings → Skills → Upload Skill** and drop each `.zip` you want.
+
+Slash commands aren't supported in Cowork — only skills. The skills auto-fire when the user asks something matching their `description` field, so you usually don't need commands.
+
+### Path 3 — Any other agent (Codex, Cursor, OpenClaw, custom SDK)
+
+Each skill is a self-contained directory: `SKILL.md` + `references/` + `examples/`. Any agent that can read `SKILL.md` and follow its instructions can use these skills.
+
+```bash
+git clone https://github.com/mrdulasolutions/BOX.git
+# Point your agent at the skill directories:
+ls skills/
+# → box-setup/  box-memory-write/  box-memory-recall/  box-file-companion/
+#   box-team-isolate/  box-tier-detect/  box-index-rebuild/
+```
+
+The Anthropic Skills SDK and most agent frameworks accept this format directly. If your platform uses a different skill convention, the SKILL.md content is plain markdown instructions you can adapt or prepend to your system prompt.
+
+### Building from source
+
+```bash
+./scripts/build.sh              # build plugin zip + all skill zips
+./scripts/build.sh --check      # verify per-skill refs match canonical (no zip)
+./scripts/build.sh --sync       # force-sync canonical refs into skills, then build
+```
+
+Outputs land in `dist/`:
+
+```
+dist/
+├── box-memory-plugin.zip       # full Claude Code plugin
+└── skills/
+    ├── box-setup.zip           # individual skill, Cowork-uploadable
+    ├── box-tier-detect.zip
+    ├── box-memory-write.zip
+    ├── box-memory-recall.zip
+    ├── box-file-companion.zip
+    ├── box-team-isolate.zip
+    └── box-index-rebuild.zip
+```
 
 ---
 
 ## Quick start
 
+**Claude Code:**
+
 ```text
 /box-init my-workspace
 ```
 
-This:
+**Cowork or any other agent** — just ask in natural language:
+
+> *"Set up a Box memory workspace called my-workspace."*
+
+The `box-setup` skill fires from its description. Same result either way:
+
 1. Probes your Box account to detect tier and capabilities
 2. Creates a workspace folder structure (`memories/`, `files/`, `companions/`, `teams/`)
 3. Writes `_box-memory.json` (workspace config)
@@ -75,7 +154,7 @@ The `box-memory-write` skill fires, generates a memory file with frontmatter, up
 
 The `box-memory-recall` skill fires, reads the index, returns the memory instantly.
 
-> *"Take a look at this CAD file and remember what it is."*
+> *"Take a look at this PDF and remember what it is."*
 
 The `box-file-companion` skill fires, generates a paired `.md` with the file's hash, summary, and links.
 
@@ -226,7 +305,9 @@ See [references/schema.md](references/schema.md) for the full reference.
 
 ---
 
-## Slash commands
+## Slash commands (Claude Code only)
+
+Cowork doesn't support slash commands — skills auto-fire from their `description`. These commands are convenience wrappers for Claude Code users who prefer explicit invocation.
 
 | Command | What it does |
 |---|---|
@@ -235,10 +316,12 @@ See [references/schema.md](references/schema.md) for the full reference.
 | `/box-recall <query>` | Recall memories matching a query |
 | `/box-companion <file-id-or-path>` | Generate a companion `.md` for a binary |
 | `/box-status` | Show tier, capabilities, workspace stats |
+| `/box-team <subcommand>` | Multi-team management (create, list, inspect, conflicts) |
+| `/box-index-rebuild` | Regenerate indexes from source memory files |
 
 ---
 
-## Skills (auto-invoked)
+## Skills (auto-invoked, all platforms)
 
 | Skill | When it fires |
 |---|---|
@@ -269,7 +352,7 @@ See [references/architecture.md](references/architecture.md).
 - **Box search indexing lag (~10 min)** affects all tiers. The plugin's index file pattern sidesteps this. Don't rely on Box search for fresh writes.
 - **Wikilinks are not validated by Box.** Rename a file → links in other memories silently break. The plugin maintains a `by_wikilink` map in the index; recall uses it.
 - **Custom metadata templates require Business+.** On Personal, fall back to index files (same recall API, slightly slower writes).
-- **Box MCP must be installed and authorized** in your Claude Code config. The plugin does not handle Box auth.
+- **Box MCP must be installed and authorized** in your agent platform's MCP configuration (Claude Code, Cowork, or your own setup). The skills do not handle Box auth.
 
 ---
 
