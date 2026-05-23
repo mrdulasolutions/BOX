@@ -175,4 +175,4 @@ If everything was clean, just say: *"No drift detected. Index is consistent with
 
 - `references/schema.md` — index schema
 - `references/architecture.md` — derived state vs source state
-- `skills/box-memory-write` — the writer that's supposed to keep the index fresh
+- `skills/box-write` — the writer that's supposed to keep the index fresh

@@ -1,9 +1,9 @@
 ---
-name: box-memory-recall
+name: box-recall
 description: Recall memories from a box-memory workspace. Multi-strategy lookup that bypasses Box's 10-minute search indexing lag — tries Box Metadata Query API first (Business+ tier), falls back to per-folder _index.json (every tier), then folder listing, then Box search (last resort with stale-data warning). Returns matching memories ranked by relevance with their IDs, file paths, and content excerpts. Invoke when the user asks "what do I know about…", "what did we decide…", "find memories tagged…", "recall…", "search my Box memory", "what's in the [team] folder", or runs /box-recall.
 ---
 
-# box-memory-recall
+# box-recall
 
 You find and return memories from the user's box-memory workspace. Box's Search API has a ~10-minute indexing lag and gates body search to Business+ tier, so you don't rely on it. Instead you read structured indexes that the plugin maintains on every write.
 
@@ -11,7 +11,7 @@ You find and return memories from the user's box-memory workspace. Box's Search 
 
 - The user asks about past decisions, facts, observations, tasks, or anything that may have been saved.
 - The user runs `/box-recall <query>`.
-- Another skill needs context (e.g., `box-memory-write` checking for slug collisions, `box-file-companion` finding related memories).
+- Another skill needs context (e.g., `box-write` checking for slug collisions, `box-companion` finding related memories).
 - The user references a topic by wikilink-style phrasing ("the auth decision", "the Jane memo") — these are recallable.
 
 ## Inputs
@@ -214,7 +214,7 @@ If the user asks "what teams have anything tagged auth", iterate teams and repor
 
 ## Errors to surface clearly
 
-- **No workspace** → run `box-setup`.
+- **No workspace** → run `box-init`.
 - **Box MCP not connected** → standard MCP message.
 - **Empty workspace** → "Workspace is empty — no memories saved yet. Start with `/box-write`."
 - **Permission denied on a folder** → "Skipped folder `<path>` — no read access." Continue with accessible folders.

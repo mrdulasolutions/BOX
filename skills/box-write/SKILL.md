@@ -1,24 +1,24 @@
 ---
-name: box-memory-write
+name: box-write
 description: Write a new memory to a box-memory workspace. Generates a ULID, builds YAML frontmatter (kind, status, tags, related wikilinks), composes the markdown body, uploads to the appropriate Box folder, and updates the folder's _index.json — plus, on Business+ tier, applies the boxMemory metadata template instance. Invoke when the user says "remember that…", "save this to Box", "log a decision", "record an observation", "note that…", or anything that should persist as durable agent memory. Also fires when the user runs /box-write.
 ---
 
-# box-memory-write
+# box-write
 
-You commit a piece of agent knowledge to Box as a durable, append-only memory file with structured frontmatter and Obsidian-style links. Every memory you write is recallable by the `box-memory-recall` skill instantly via the index, and (on Business+) via Box's Metadata Query API.
+You commit a piece of agent knowledge to Box as a durable, append-only memory file with structured frontmatter and Obsidian-style links. Every memory you write is recallable by the `box-recall` skill instantly via the index, and (on Business+) via Box's Metadata Query API.
 
 ## When you fire
 
 - The user says "remember…", "save…", "log…", "record…", "note that…", "let's capture…", or anything that signals durable persistence.
 - The user runs `/box-write`.
-- Another skill (often `box-file-companion`) calls you to write a memory.
+- Another skill (often `box-companion`) calls you to write a memory.
 - You detect a decision, fact, or insight in the conversation that the user has not explicitly said "don't save" about, **and** the user has a workspace set up. Be conservative — when in doubt, ask before writing.
 
 ## Inputs you need
 
 Required:
 
-- **Workspace** — must exist. If it doesn't, call `box-setup` first.
+- **Workspace** — must exist. If it doesn't, call `box-init` first.
 - **Title** — a plain-English title. You can infer from the user's request, but confirm if it's not obvious.
 - **Body content** — the actual knowledge being captured.
 
@@ -35,7 +35,7 @@ Inferred (with defaults, ask only if ambiguous):
 
 ### Step 1 — Verify workspace exists
 
-Read `_box-memory.json` from the user's expected workspace root. If missing, call `box-setup` first. Don't proceed without it.
+Read `_box-memory.json` from the user's expected workspace root. If missing, call `box-init` first. Don't proceed without it.
 
 ### Step 2 — Determine target folder
 
@@ -249,7 +249,7 @@ If you superseded an older memory, mention it: `Superseded: mem_… (now status:
 
 ## Errors to surface clearly
 
-- **No workspace** → "No box-memory workspace found. Run `/box-init` first." Then call `box-setup`.
+- **No workspace** → "No box-memory workspace found. Run `/box-init` first." Then call `box-init`.
 - **Box MCP not connected** → standard MCP message.
 - **Permission denied on target folder** → "Can't write to <folder>. Check Box folder permissions or pick a different team."
 - **409 on filename** (after slug bump) → "Slug collision is recurring. Check `_index.json` for drift, run `/box-index-rebuild`."

@@ -14,7 +14,7 @@ Each note has the symptom, the verified cause, and the workaround. If you discov
 
 **Workaround:** Use `search_files_keyword` with the `mdfilters` parameter to filter by metadata. Route every bulk metadata query through keyword search with filters — never the dedicated metadata-query tool.
 
-**Implementation impact:** `box-memory-recall` Step 4 (Business+ structured filter path) calls `search_files_keyword` with a non-empty query (see [Note 4](#4-keyword-search-requires-a-non-empty-query-parameter)) plus `mdfilters` for the actual filtering. The behavior is correct; the tool name is misleading.
+**Implementation impact:** `box-recall` Step 4 (Business+ structured filter path) calls `search_files_keyword` with a non-empty query (see [Note 4](#4-keyword-search-requires-a-non-empty-query-parameter)) plus `mdfilters` for the actual filtering. The behavior is correct; the tool name is misleading.
 
 **Tracking:** If a future MCP version fixes `search_files_metadata`, the skill should still prefer `search_files_keyword + mdfilters` for now — switching back would mean re-testing. Update this note when the wrapper is verified working.
 
@@ -48,14 +48,14 @@ If retry still fails after reconnect, the issue is *not* a stale token — escal
 
 **Cause:** Box's documentation states Metadata Query is real-time. Empirically it is not for *freshly created templates*. After template creation, there's a ~10-minute warm-up before bulk queries return correct results. Direct file metadata reads work immediately; bulk filter-based queries do not. This appears to be similar in mechanism to Box's 10-minute Search API indexing lag but for the metadata index specifically.
 
-**Workaround for `box-setup`:**
+**Workaround for `box-init`:**
 
 - Create the template.
 - Apply it to one canary file.
 - Surface a note to the user: *"Metadata template `<key>` created. Bulk queries via mdfilters may take ~10 minutes to return correct results for freshly-applied instances. Direct file fetches work immediately. The `_index.json` fallback path is unaffected."*
 - Don't block setup on the warm-up completing.
 
-**Workaround for `box-memory-recall`:**
+**Workaround for `box-recall`:**
 
 - On Business+ tier, if `mdfilters`-based queries return suspiciously empty results within 10 minutes of any template-related change, fall through to the `_index.json` path automatically.
 - Mention to the user when this fallback fires (so they know why the path is slower than usual).
@@ -99,7 +99,7 @@ search_files_keyword(
 mdfilters: {confidence: {gt: 0.9001}}
 ```
 
-For most agent-memory queries this distinction doesn't matter (you usually want "high confidence" which means `>= 0.9` anyway). Note this caveat in skill instructions where strict comparisons matter — e.g., `box-memory-recall`'s confidence-based filtering.
+For most agent-memory queries this distinction doesn't matter (you usually want "high confidence" which means `>= 0.9` anyway). Note this caveat in skill instructions where strict comparisons matter — e.g., `box-recall`'s confidence-based filtering.
 
 **Also affects:** `lt`, `gte`, `lte` may behave similarly. If you're building a numeric range query and strict bounds matter, test against your data before relying on the comparison.
 
@@ -132,7 +132,7 @@ Reasonable if you can't easily migrate, or if multiple downstream consumers depe
 
 ### What this plugin does by default
 
-`box-setup` creates the template using the canonical name `boxMemory`. If a workspace's `_box-memory.json` declares a different `metadata_template_key`, the plugin uses that key as-is for all operations — so manual override is supported.
+`box-init` creates the template using the canonical name `boxMemory`. If a workspace's `_box-memory.json` declares a different `metadata_template_key`, the plugin uses that key as-is for all operations — so manual override is supported.
 
 If you're seeing dual templates (`boxMemory` and `agentMemory` both exist on the same account), pick one as authoritative and migrate or delete the other. Don't leave both active — recall behavior is ambiguous.
 

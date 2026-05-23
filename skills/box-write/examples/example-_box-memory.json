@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "schema_version": 1,
+  "workspace_name": "example-workspace",
+  "workspace_root_id": "284711992800",
+  "created_at": "2026-05-22T18:30:00Z",
+  "updated_at": "2026-05-22T19:14:00Z",
+  "tier": "personal",
+  "tier_detected_at": "2026-05-22T18:30:00Z",
+  "capabilities": {
+    "custom_metadata_templates": false,
+    "template_create_permission": false,
+    "body_search": false,
+    "max_file_size_mb": 250,
+    "storage_unlimited": false,
+    "storage_used_gb": 0.04,
+    "storage_total_gb": 10,
+    "box_sign": false,
+    "retention_policies": false,
+    "legal_holds": false,
+    "keysafe": false,
+    "compliance": []
+  },
+  "metadata_template_key": null,
+  "metadata_template_created_at": null,
+  "teams": ["default"],
+  "agents": ["claude-code"],
+  "settings": {
+    "default_team": "default",
+    "companion_layout": "sibling",
+    "include_superseded_in_recall": false,
+    "rebuild_index_on_drift": true
+  },
+  "folder_ids": {
+    "root": "284711992800",
+    "memories": "284711992847",
+    "files": "284711992848",
+    "companions": null,
+    "teams": "284711992849",
+    "team_default_root": "284711992850",
+    "team_default_memories": "284711992851",
+    "team_default_files": "284711992852",
+    "team_default_companions": null
+  }
+}

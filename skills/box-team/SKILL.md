@@ -1,9 +1,9 @@
 ---
-name: box-team-isolate
-description: Add or manage a team subtree in a box-memory workspace. Creates a team folder under teams/<name>/ with its own memories/, files/, optional companions/, and _index.json — and updates the workspace config to track the new team. Folder ACLs are the real isolation boundary; this skill creates the structure but does not set permissions (use Box UI for that). Invoke when the user says "create a team", "add team X", "set up engineering team in Box", "let ops have their own memory", or runs /box-team-isolate <name>.
+name: box-team
+description: Add or manage a team subtree in a box-memory workspace. Creates a team folder under teams/<name>/ with its own memories/, files/, optional companions/, and _index.json — and updates the workspace config to track the new team. Folder ACLs are the real isolation boundary; this skill creates the structure but does not set permissions (use Box UI for that). Invoke when the user says "create a team", "add team X", "set up engineering team in Box", "let ops have their own memory", or runs /box-team <name>.
 ---
 
-# box-team-isolate
+# box-team
 
 You add a new team to a box-memory workspace, or manage existing team subtrees. Teams are how multi-team isolation works in this plugin — each team gets its own folder with its own indexes, and Box folder ACLs are the enforcement boundary.
 
@@ -14,7 +14,7 @@ A frontmatter field `team: ops` is a hint. A folder permission that says *user X
 ## When you fire
 
 - User says "create a team", "add team <name>", "set up <team> in Box", "let <team> have their own memory".
-- User runs `/box-team-isolate <name>` or `/box-init --team=<name>` for an additional team.
+- User runs `/box-team <name>` or `/box-init --team=<name>` for an additional team.
 - User wants to list existing teams, see team contents, or detect cross-team conflicts.
 
 ## Modes
@@ -25,7 +25,7 @@ This skill has several sub-modes inferred from the user's ask:
 |---|---|
 | Create | "add team", "create team", "set up a team" |
 | List | "what teams exist", "show teams", "list teams" |
-| Inspect | "what's in <team>", "show me <team>'s memories", `/box-team-isolate inspect <name>` |
+| Inspect | "what's in <team>", "show me <team>'s memories", `/box-team inspect <name>` |
 | Conflict scan | "find duplicate memories across teams", "check for slug collisions", "are there conflicts" |
 | Remove (rare) | "remove team", "delete team" — see *Remove* section |
 
@@ -39,7 +39,7 @@ This skill has several sub-modes inferred from the user's ask:
 
 ### What you do
 
-1. **Verify workspace.** Read `_box-memory.json`. If missing, run `box-setup` first.
+1. **Verify workspace.** Read `_box-memory.json`. If missing, run `box-init` first.
 2. **Verify the team name is valid** (no slashes, no spaces, lowercase). Suggest a clean version if not.
 3. **Check for existing team.** If `_box-memory.json.teams[]` already contains the name, stop and report. Don't duplicate.
 4. **Create folders under `teams/`:**
@@ -48,7 +48,7 @@ This skill has several sub-modes inferred from the user's ask:
    - `teams/<name>/files/`
    - `teams/<name>/companions/` (only if folder layout)
    - Capture every folder ID.
-5. **Seed `_index.json` files** in each new folder — same template as `box-setup` Step 6.
+5. **Seed `_index.json` files** in each new folder — same template as `box-init` Step 6.
 6. **Update `_box-memory.json`:**
    - Append `<name>` to `teams[]`.
    - Append the team's `folder_ids` to the `folder_ids` map (using prefix `team_<name>_*` keys).
@@ -94,8 +94,8 @@ Teams in workspace `<workspace-name>`:
   ops              23 memories, 0 files
   legal            5 memories, 2 files
 
-To see contents:    /box-team-isolate inspect <name>
-To add a team:      /box-team-isolate <new-team-name>
+To see contents:    /box-team inspect <name>
+To add a team:      /box-team <new-team-name>
 ```
 
 If a team folder is inaccessible (403), show "🔒 access denied" instead of counts. Don't fail the listing.
@@ -204,7 +204,7 @@ If the user actually wants to delete content, they should do it in Box web UI wi
 ## Don't
 
 - Don't try to set Box folder ACLs automatically. The user should do this in Box web UI, with intent.
-- Don't write memories during team setup. Setup is structure only — same rule as `box-setup`.
+- Don't write memories during team setup. Setup is structure only — same rule as `box-init`.
 - Don't delete memory files when a team is "removed" — the team is a config concept; files are durable artifacts.
 - Don't proceed past Create without surfacing the access-control reminder. People will assume frontmatter is access control. It isn't.
 

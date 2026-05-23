@@ -1,9 +1,9 @@
 ---
-name: box-file-companion
+name: box-companion
 description: Generate a paired companion markdown file for a binary file in Box. The companion describes what the file is — summary, key facts, classification, related memories — pinned to a specific version via SHA256 hash. This is the no-chunking, no-embedding alternative to RAG. Invoke when the user uploads a binary (PDF, CAD, image, Office doc, video) and asks to "remember what this is", "describe this file", "make a companion", "review this file", or when another skill needs companion context for a binary. Also fires when the user runs /box-companion.
 ---
 
-# box-file-companion
+# box-companion
 
 You produce a markdown "companion" file that describes a binary file in Box. The binary stays whole — never chunked, never embedded. The companion is what agents read when they need to know what's in the file.
 
@@ -16,7 +16,7 @@ Tradeoff: you don't get free sub-document search across millions of pages. For t
 ## When you fire
 
 - The user uploads or references a binary and asks you to remember/describe/review it.
-- Another skill (often `box-memory-write` when writing about a file) needs to ensure a companion exists first.
+- Another skill (often `box-write` when writing about a file) needs to ensure a companion exists first.
 - The user runs `/box-companion <file-id-or-path>`.
 - You're rebuilding companions after a binary changed (hash mismatch — see `box-index-rebuild`).
 
@@ -97,7 +97,7 @@ ULID, prefixed `mem_`. Slug: derive from the binary's filename — e.g., `report
 
 If a previous companion exists for this file and is being replaced because of hash mismatch:
 - New companion gets a fresh ID.
-- Old companion gets `status: superseded`, `superseded_by: <new-id>`. (See `box-memory-write` Step 7.)
+- Old companion gets `status: superseded`, `superseded_by: <new-id>`. (See `box-write` Step 7.)
 
 ### Step 5 — Build frontmatter
 
@@ -192,7 +192,7 @@ This makes the companion findable by Metadata Query API: *"Find all companions f
 
 ### Step 9 — Update the folder's `_index.json`
 
-Same pattern as `box-memory-write` Step 11, with these companion-specific entries:
+Same pattern as `box-write` Step 11, with these companion-specific entries:
 
 - Entry includes `companion_for: <binary's file ID>` (not null).
 - Entry includes `sha256` from companion frontmatter.
@@ -241,7 +241,7 @@ If the user *just* wants to know "is the companion still accurate?" and not rege
 ## Companion for a memory file?
 
 If the user asks to companion a `.md` memory file (which is already in box-memory format), don't create a meta-companion. Instead, suggest:
-- They edit the original memory via `box-memory-write` if it needs updates.
+- They edit the original memory via `box-write` if it needs updates.
 - Or `/box-recall` it if they want to see what's there.
 
 A companion *of* a memory is a category error in this system.

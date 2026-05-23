@@ -189,7 +189,6 @@ build_plugin_zip() {
 
   cp -r .claude-plugin "$stage/"
   cp -r skills         "$stage/"
-  cp -r commands       "$stage/"
   cp -r references     "$stage/"
   cp -r examples       "$stage/"
   cp README.md LICENSE CHANGELOG.md "$stage/"
@@ -274,7 +273,9 @@ main() {
   echo "  Plugin zip (Claude Code):"
   echo "    dist/box-memory-plugin.zip"
   echo
-  echo "  Skills bundle (all 7 skills together, drop into a plugin or agent skills dir):"
+  local skill_count
+  skill_count="$(discover_skills | wc -l | tr -d ' ')"
+  echo "  Skills bundle (all $skill_count skills together, drop into a plugin or agent skills dir):"
   echo "    dist/box-memory-skills.zip"
   echo
   echo "  Individual skill zips (Claude Cowork, or any agent that accepts skill zips):"

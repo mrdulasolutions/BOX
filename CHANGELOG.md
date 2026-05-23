@@ -4,6 +4,64 @@ All notable changes to box-memory will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] - 2026-05-23
+
+### Changed
+
+Migrated from the legacy `commands/` flat-file format to the modern `skills/<name>/SKILL.md` format. After installing v0.1.4, Claude Code emitted:
+
+> *"Plugin installed. Note: it uses the legacy commands/ format. Both formats work — consider migrating to skills/*/SKILL.md."*
+
+v0.1.5 is that migration. In the modern format, each skill's name *is* its slash command — no separate `commands/` directory needed.
+
+**Skill renames** (slash commands now match skill names):
+
+| v0.1.4 skill | v0.1.4 command | v0.1.5 skill / command |
+|---|---|---|
+| `box-setup` | `/box-init` | `box-init` (`/box-init`) |
+| `box-memory-write` | `/box-write` | `box-write` (`/box-write`) |
+| `box-memory-recall` | `/box-recall` | `box-recall` (`/box-recall`) |
+| `box-file-companion` | `/box-companion` | `box-companion` (`/box-companion`) |
+| `box-team-isolate` | `/box-team` | `box-team` (`/box-team`) |
+| `box-tier-detect` | (none) | `box-tier-detect` (`/box-tier-detect`) |
+| `box-index-rebuild` | `/box-index-rebuild` | `box-index-rebuild` (`/box-index-rebuild`) |
+
+### Added
+
+- **New `box-status` skill** — was previously only a slash command. Now a real skill (auto-fires on "what's in my workspace", "show status", etc.) and a `/box-status` command. Read-only — never modifies the workspace.
+
+### Removed
+
+- `commands/` directory. Slash commands are now part of skills via the modern format.
+
+### Fixed
+
+- No more "legacy commands/ format" warning on install.
+
+### Skill cross-references
+
+All internal cross-references between skills (e.g., `box-init` calls `box-tier-detect`, `box-recall` reads what `box-write` produced) updated to the new names. Plugin validates clean.
+
+### Per-skill zip filename changes
+
+Cowork users uploading individual skill zips: the filenames changed to match the new skill names. Re-download from the v0.1.5 release.
+
+| Old zip name (v0.1.4) | New zip name (v0.1.5) |
+|---|---|
+| `box-setup.zip` | `box-init.zip` |
+| `box-memory-write.zip` | `box-write.zip` |
+| `box-memory-recall.zip` | `box-recall.zip` |
+| `box-file-companion.zip` | `box-companion.zip` |
+| `box-team-isolate.zip` | `box-team.zip` |
+| — | `box-status.zip` (new) |
+
+### Compatibility
+
+- **Workspaces created by earlier versions:** unchanged. The `_box-memory.json` config and on-disk memory files have no skill-name references; only the plugin/skill code references skill names.
+- **If you installed the plugin via git clone:** `git pull` and you're current.
+- **If you installed via zip:** download the new `box-memory-plugin.zip` from v0.1.5 and re-extract.
+- **No schema changes.** Memory frontmatter, index format, and template definition are byte-identical to v0.1.4.
+
 ## [0.1.4] - 2026-05-23
 
 ### Fixed

@@ -1,9 +1,9 @@
 ---
-name: box-setup
+name: box-init
 description: Bootstrap a Box workspace for agent memory + file storage. Creates the standard folder structure (memories, files, companions, teams), writes the workspace config file (_box-memory.json), seeds initial _index.json files, and on Business+ tier optionally creates the boxMemory metadata template. Invoke this when the user runs /box-init, asks to "set up Box memory", "initialize a workspace", "create a Box vault", or when another skill discovers no workspace exists yet.
 ---
 
-# box-setup
+# box-init
 
 You bootstrap a new box-memory workspace. After you run, the user can write and recall memories, store binaries with companions, and isolate by team — all the other skills depend on the structure you create.
 
@@ -17,7 +17,7 @@ You bootstrap a new box-memory workspace. After you run, the user can write and 
 
 1. **Workspace name** (default: `box-memory`). Used as the root folder name in Box.
 2. **Workspace location** (default: Box root `0`). Box folder ID under which to create the workspace folder. If the user already has a "Documents" or similar folder they want to nest under, accept the folder ID or path.
-3. **Initial teams** (default: `["default"]`). The user can add more later via `box-team-isolate`.
+3. **Initial teams** (default: `["default"]`). The user can add more later via `box-team`.
 4. **Companion layout** (default: `sibling`). Either `sibling` (companion `.md` lives next to its binary in the same folder) or `folder` (all companions live in a `companions/` subdirectory).
 5. **Compliance posture** (default: empty). If the user knows their Box plan includes SOC 2, HIPAA, FedRAMP, etc., capture it for the config file. Optional. They can declare later.
 
@@ -168,7 +168,7 @@ fields:
   - {key: updated_at,            displayName: Updated,              type: date}
 ```
 
-Set `metadata_template_key` in `_box-memory.json` to `"boxMemory"` after success. Also set `metadata_template_created_at` to the current ISO timestamp — `box-memory-recall` checks this to know whether the template is still in its ~10 min warm-up window. Update the config in Box.
+Set `metadata_template_key` in `_box-memory.json` to `"boxMemory"` after success. Also set `metadata_template_created_at` to the current ISO timestamp — `box-recall` checks this to know whether the template is still in its ~10 min warm-up window. Update the config in Box.
 
 **Surface the warm-up window to the user.** When you report setup success, include: *"Metadata template `boxMemory` created. Bulk `mdfilters` queries may take ~10 minutes to return correct results for freshly-applied template instances (a Box behavior, not a plugin bug). Direct file fetches and `_index.json` recall work immediately. During the warm-up window, recall automatically falls back to index files."* See [references/operational-notes.md Note 3](references/operational-notes.md).
 
@@ -232,7 +232,7 @@ Routing:
 Next steps:
 1. Save a memory:  "Remember that <thing>" or /box-write
 2. Recall:         "What do I know about <topic>" or /box-recall <query>
-3. Add a team:     /box-team-isolate <team-name>
+3. Add a team:     /box-team <team-name>
 4. Status check:   /box-status
 ```
 

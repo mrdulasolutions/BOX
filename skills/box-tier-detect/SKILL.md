@@ -17,7 +17,7 @@ You probe the Box account that the Box MCP is currently connected to and figure 
 ## Inputs you need
 
 - A connected Box MCP. If Box MCP tools aren't available, surface a clear message: *"Box MCP is not connected. Install and authorize it via your platform's MCP configuration (e.g., Claude Code/Cowork → Settings → Connectors → Box, or your platform's equivalent), then re-run."* Stop.
-- (Optional) The path or ID of the workspace root, if the user has already run `box-setup`. If you don't have it, you can still detect tier — the workspace is just where you'd cache the result.
+- (Optional) The path or ID of the workspace root, if the user has already run `box-init`. If you don't have it, you can still detect tier — the workspace is just where you'd cache the result.
 
 ## What you do
 

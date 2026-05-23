@@ -7,7 +7,7 @@ A skill bundle that turns any Box account into a durable, multi-team, audit-frie
 - **Claude Code plugin** — git clone or unzip into `~/.claude/plugins/box-memory/`. All skills and `/box-*` commands available.
 - **Claude Cowork plugin** (admin) — upload `box-memory-plugin.zip` via Cowork → Plugins → Add plugin. All skills available org-wide.
 - **Claude Cowork skills** (personal) — upload individual `box-<skill>.zip` files via Cowork → Settings → Skills → Upload skill. Pick which skills you want.
-- **Any other agent** — point your agent at the skill directories (`skills/box-setup/SKILL.md`, etc.). Each skill is self-contained.
+- **Any other agent** — point your agent at the skill directories (`skills/box-init/SKILL.md`, etc.). Each skill is self-contained.
 
 Markdown memories with YAML frontmatter and Obsidian-style wikilinks. Every binary file gets a paired companion `.md` so agents can recall what a file is *without* chunking it into a vector store. Instant lookup via per-folder index files (works on every Box tier) or Box metadata templates (Business+).
 
@@ -66,7 +66,7 @@ curl -L -o /tmp/box-memory-plugin.zip \
 unzip /tmp/box-memory-plugin.zip -d ~/.claude/plugins/box-memory/
 ```
 
-After install, the seven skills and `/box-*` slash commands are available in Claude Code.
+After install, the eight skills (each is also a `/box-*` slash command) are available in Claude Code.
 
 ### Path 2 — Claude Cowork plugin (admin, recommended for orgs)
 
@@ -75,7 +75,7 @@ Cowork accepts the same plugin format as Claude Code. The plugin zip works in bo
 1. Download `box-memory-plugin.zip` from the [latest release](https://github.com/mrdulasolutions/BOX/releases/latest).
 2. In Cowork (as an org admin), go to **Cowork settings → Plugins → Add plugin**.
 3. Drag the zip in, or click and select the file.
-4. Once installed, every user in your org gets the plugin's seven skills and `/box-*` commands.
+4. Once installed, every user in your org gets the plugin's eight skills (each invokable as a `/box-*` slash command).
 
 **Requirements** (per Cowork's docs): zip must be ≤50 MB and have a plugin name in lowercase-hyphenated form — `box-memory` matches. The plugin zip's contents are at the zip root (`.claude-plugin/plugin.json` at root, plus `skills/`, `commands/`, etc.) as Cowork expects.
 
@@ -84,19 +84,20 @@ Cowork accepts the same plugin format as Claude Code. The plugin zip works in bo
 If you don't have admin rights, or you only want a subset of the skills, upload them individually as personal skills.
 
 1. Download the individual skill zips from the [latest release](https://github.com/mrdulasolutions/BOX/releases/latest):
-   - `box-setup.zip`
+   - `box-init.zip`
+   - `box-status.zip`
    - `box-tier-detect.zip`
-   - `box-memory-write.zip`
-   - `box-memory-recall.zip`
-   - `box-file-companion.zip`
-   - `box-team-isolate.zip`
+   - `box-write.zip`
+   - `box-recall.zip`
+   - `box-companion.zip`
+   - `box-team.zip`
    - `box-index-rebuild.zip`
 2. In Cowork, go to **Settings → Skills → Upload skill**.
 3. Drop each `.zip` you want. Cowork unpacks each as a self-contained skill.
 
-Each per-skill zip contains a folder matching the skill name (e.g., `box-setup/SKILL.md` inside `box-setup.zip`) — the format Cowork's skill uploader requires.
+Each per-skill zip contains a folder matching the skill name (e.g., `box-init/SKILL.md` inside `box-init.zip`) — the format Cowork's skill uploader requires.
 
-**Recommended upload order** if you want to test the minimum useful set first: `box-setup` → `box-tier-detect` → `box-memory-write` → `box-memory-recall`. Add the rest as you need them.
+**Recommended upload order** if you want to test the minimum useful set first: `box-init` → `box-tier-detect` → `box-write` → `box-recall`. Add the rest as you need them.
 
 Slash commands aren't available via personal skills — only when the full plugin is installed (Path 1 or 2). The skills still auto-fire from their `description` field when the user asks something matching.
 
@@ -108,13 +109,13 @@ Each skill directory is self-contained: `SKILL.md` + `references/` + `examples/`
 git clone https://github.com/mrdulasolutions/BOX.git
 # Point your agent at the skill directories:
 ls skills/
-# → box-setup/  box-memory-write/  box-memory-recall/  box-file-companion/
-#   box-team-isolate/  box-tier-detect/  box-index-rebuild/
+# → box-init/  box-write/  box-recall/  box-companion/
+#   box-team/  box-tier-detect/  box-index-rebuild/
 ```
 
 For agents that accept the Anthropic Skills format directly, use the per-skill zips from the release.
 
-For agents that expect a `skills/` directory to drop in, use `box-memory-skills.zip` from the release — it unzips to a `skills/` directory with all 7 skill subdirectories inside.
+For agents that expect a `skills/` directory to drop in, use `box-memory-skills.zip` from the release — it unzips to a `skills/` directory with all 8 skill subdirectories inside.
 
 ### Building from source
 
@@ -129,14 +130,14 @@ Outputs land in `dist/`:
 ```
 dist/
 ├── box-memory-plugin.zip       # Cowork Plugins upload + Claude Code (flat, .claude-plugin/ at root)
-├── box-memory-skills.zip       # all 7 skills bundled as skills/<name>/ (drop into any agent)
+├── box-memory-skills.zip       # all 8 skills bundled as skills/<name>/ (drop into any agent)
 └── skills/
-    ├── box-setup.zip           # Cowork Skills upload (wrapped: box-setup/SKILL.md inside)
+    ├── box-init.zip           # Cowork Skills upload (wrapped: box-init/SKILL.md inside)
     ├── box-tier-detect.zip
-    ├── box-memory-write.zip
-    ├── box-memory-recall.zip
-    ├── box-file-companion.zip
-    ├── box-team-isolate.zip
+    ├── box-write.zip
+    ├── box-recall.zip
+    ├── box-companion.zip
+    ├── box-team.zip
     └── box-index-rebuild.zip
 ```
 
@@ -164,7 +165,7 @@ dist/
 
 > *"Set up a Box memory workspace called my-workspace."*
 
-The `box-setup` skill fires from its description. Same result either way:
+The `box-init` skill fires from its description. Same result either way:
 
 1. Probes your Box account to detect tier and capabilities
 2. Creates a workspace folder structure (`memories/`, `files/`, `companions/`, `teams/`)
@@ -176,15 +177,15 @@ Then just talk to your agent:
 
 > *"Remember that we decided to use JWT instead of sessions because of mobile."*
 
-The `box-memory-write` skill fires, generates a memory file with frontmatter, uploads to Box, updates the index.
+The `box-write` skill fires, generates a memory file with frontmatter, uploads to Box, updates the index.
 
 > *"What did we decide about auth?"*
 
-The `box-memory-recall` skill fires, reads the index, returns the memory instantly.
+The `box-recall` skill fires, reads the index, returns the memory instantly.
 
 > *"Take a look at this PDF and remember what it is."*
 
-The `box-file-companion` skill fires, generates a paired `.md` with the file's hash, summary, and links.
+The `box-companion` skill fires, generates a paired `.md` with the file's hash, summary, and links.
 
 ---
 
@@ -333,33 +334,22 @@ See [references/schema.md](references/schema.md) for the full reference.
 
 ---
 
-## Slash commands (Claude Code only)
+## Skills
 
-Cowork doesn't support slash commands — skills auto-fire from their `description`. These commands are convenience wrappers for Claude Code users who prefer explicit invocation.
+Each skill is both an auto-invoked capability (fires from its `description` when the user's request matches) and a slash command (in environments that support them — Claude Code, Claude Cowork with the plugin installed). The skill name *is* the slash command.
 
-| Command | What it does |
-|---|---|
-| `/box-init [workspace-name]` | Bootstrap a workspace |
-| `/box-write` | Force a memory write from current context |
-| `/box-recall <query>` | Recall memories matching a query |
-| `/box-companion <file-id-or-path>` | Generate a companion `.md` for a binary |
-| `/box-status` | Show tier, capabilities, workspace stats |
-| `/box-team <subcommand>` | Multi-team management (create, list, inspect, conflicts) |
-| `/box-index-rebuild` | Regenerate indexes from source memory files |
+| Skill / Slash command | When it fires | Typical invocation |
+|---|---|---|
+| `box-init` (`/box-init`) | First-time workspace setup, or no workspace is found | *"set up Box memory"* |
+| `box-status` (`/box-status`) | User asks about workspace state, tier, counts | *"what's in my Box workspace"* |
+| `box-tier-detect` (`/box-tier-detect`) | Internal — other skills call it; user can force re-probe | *"what tier am I on"* |
+| `box-write` (`/box-write`) | User wants to save a memory | *"remember that we decided X"* |
+| `box-recall` (`/box-recall`) | User asks about past decisions/facts/etc. | *"what did we decide about Y"* |
+| `box-companion` (`/box-companion`) | A binary needs a paired markdown description | *"describe this PDF"* |
+| `box-team` (`/box-team`) | Multi-team operations | *"create a team called ops"* |
+| `box-index-rebuild` (`/box-index-rebuild`) | Index drift suspected, or after a manual Box-side change | *"refresh the indexes"* |
 
----
-
-## Skills (auto-invoked, all platforms)
-
-| Skill | When it fires |
-|---|---|
-| `box-setup` | First-time workspace setup, or when no workspace is found |
-| `box-tier-detect` | Internal — runs once per workspace, caches result |
-| `box-memory-write` | User asks to save, remember, log, or record something |
-| `box-memory-recall` | User asks "what do I know about…", "did we decide…", etc. |
-| `box-file-companion` | A binary is referenced and needs a companion |
-| `box-team-isolate` | User mentions a team scope or a multi-team workflow |
-| `box-index-rebuild` | Index drift detected, or user asks to rebuild |
+In Cowork (with the plugin installed), the same eight skills are available as `/box-*` slash commands. With personal-skill upload (no plugin), the skills still auto-fire from their `description` but slash command syntax may not work in your client.
 
 ---
 
