@@ -4,6 +4,23 @@ All notable changes to box-memory will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.10] - 2026-05-23
+
+### Fixed
+
+v0.1.9 had all the structural fixes from the working minimal but still failed Cowork validation. The next-tightest hypothesis: **README in the plugin zip was 18 KB**, exceeding the largest single file in Anthropic's entire `knowledge-work-plugins` repo (`legal/review-contract` at 16.7 KB).
+
+v0.1.10 ships a slim plugin-zip README (~1.5 KB — same shape as the minimal's). The full README.md in the repo root stays intact for GitHub viewers and `git clone` installs.
+
+| | v0.1.9 README | v0.1.10 README |
+|---|---|---|
+| In plugin zip | 18.1 KB | ~1.5 KB |
+| In repo / on GitHub | 18.1 KB | 18.1 KB (unchanged) |
+
+### If this still fails
+
+The next surface to trim is SKILL.md bodies — currently ~8–13 KB each, vs Anthropic's typical ~5–8 KB. Detailed step-by-step content would move to per-skill `references/` (which the plugin zip excludes anyway, but the repo + per-skill upload zips keep).
+
 ## [0.1.9] - 2026-05-23
 
 ### Fixed — Cowork plugin validation, for real this time

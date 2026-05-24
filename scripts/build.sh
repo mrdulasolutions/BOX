@@ -203,7 +203,15 @@ build_plugin_zip() {
   cp    .mcp.json        "$stage/"
   cp    CONNECTORS.md    "$stage/"
   cp    LICENSE          "$stage/"
-  cp    README.md        "$stage/"
+  # Plugin zip ships a slim README (README.plugin.md → README.md). The full
+  # README.md in the repo root is for GitHub viewers and git-clone installs;
+  # at 18 KB it's larger than any single file in Anthropic's working Cowork
+  # plugins (max 16.7 KB) and may trip Cowork validation in larger plugins.
+  if [ -f "README.plugin.md" ]; then
+    cp  README.plugin.md "$stage/README.md"
+  else
+    cp  README.md        "$stage/"
+  fi
 
   # Skills: only SKILL.md from each skill dir, no references/ or examples/.
   mkdir -p "$stage/skills"
