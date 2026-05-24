@@ -4,6 +4,40 @@ All notable changes to box-memory will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.11] - 2026-05-23
+
+### Changed — every SKILL.md trimmed to ~4 KB, deep content moved to GitHub-referenced repo files
+
+v0.1.10 still failed Cowork validation with slim README. Next theory: per-SKILL.md content size. v0.1.10 SKILL.md files were 6.5–12.8 KB; the minimal that worked was 4.4 KB.
+
+v0.1.11 makes the plugin a **thin invocation layer**, with the deep knowledge fetched from the GitHub repo on demand:
+
+- **Every SKILL.md rewritten lean** — 3.2–4.2 KB each, modeled after Anthropic's `draft-response` shape (frontmatter + slash-form H1 + callout + 1-para description + Usage with examples + 5–9 step procedure + brief Errors + Deep reference URLs).
+- **Detailed procedures preserved** in `references/skills/<name>-detail.md` (8 new files containing the original detailed step-by-step content from v0.1.10). These ship in the repo and in per-skill upload zips but NOT in the plugin zip.
+- **Each lean SKILL.md ends with a "Deep reference" section** linking to the relevant GitHub URLs (the detailed procedure + canonical schema, tier-matrix, architecture, operational-notes). When the agent's workflow gets non-trivial, it fetches from GitHub.
+
+| | v0.1.10 plugin zip | v0.1.11 plugin zip |
+|---|---|---|
+| Total uncompressed | 85 KB | ~37 KB |
+| Total compressed | 38 KB | ~16 KB |
+| Largest SKILL.md | 12.8 KB | 4.2 KB |
+| Total SKILL.md content | ~82 KB | ~30 KB |
+
+Now within Anthropic's tightest plugins (`customer-support` total: 79 KB uncompressed / 33 KB compressed; ours is now lighter than that).
+
+### Architecture note
+
+The plugin is now structured as: **lean SKILL.md = invocation contract; GitHub repo = deep knowledge**. Agents can fetch the detailed procedure files via `raw.githubusercontent.com` URLs when they need the full step-by-step, schema details, or operational quirks. The plugin ships only what's needed to bootstrap the workflow.
+
+This is the right shape for an evolving plugin — when we learn a new operational quirk, we update the repo; every install gets it on the next fetch, without re-uploading a new plugin version.
+
+### If this still fails
+
+We've now matched the minimal's structure, perms, file size profile, and per-file content size. Remaining surfaces if Cowork still rejects:
+- Total skill count (8 vs Anthropic's typical 5–8) — would need to consolidate
+- Per-skill validation rules not yet discovered (no public spec)
+- The Cowork backend bug ([claude-code#24328](https://github.com/anthropics/claude-code/issues/24328)) — pivot to GitHub-marketplace install path ([#39400](https://github.com/anthropics/claude-code/issues/39400))
+
 ## [0.1.10] - 2026-05-23
 
 ### Fixed
