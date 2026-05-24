@@ -60,7 +60,33 @@ Four install paths cover Claude Code, Claude Cowork (admin plugin + personal ski
 ### Prerequisites (all paths)
 
 1. **A Box account** — any tier. The bundle auto-detects capabilities and routes accordingly.
-2. **A Box MCP server connected to your agent** — the skills invoke Box MCP tools under the hood; they do not manage Box auth themselves. Available out of the box on Claude Code and Cowork; for other platforms, point your agent at any Box MCP server (e.g., `@anthropic/box-mcp` or your own Box API wrapper).
+2. **The official Box remote MCP server** — `box-remote-mcp` hosted by Box at `https://mcp.box.com`. Box-maintained, OAuth 2.0, ~50+ tools across files / search / Box AI / Hubs / Doc Gen / metadata. Setup: Box Admin Console → Integrations → enable "Box MCP server" predefined integration; grant scopes `root_readwrite`, `ai.readwrite`, `docgen.readwrite`. In Claude Code or Cowork, install via **Settings → Connectors → Box**.
+
+> **Box deprecated the older self-hosted MCP server.** Don't start new projects with it. If you've installed a community Box MCP (e.g., `hmk/box-mcp-server`), the cloud plugin will still work, but switch to the official remote MCP when you can — that's the Box-supported surface and the one this plugin is designed against.
+
+### Authentication for non-Claude / headless agents
+
+If you're integrating from outside Claude Code / Cowork:
+
+| Use case | Recommended auth | Why |
+|---|---|---|
+| **Headless agent** (server-to-server, no human in loop) | **Client Credentials Grant (CCG)** | Service-account model; no keypair rotation; Box's documented recommendation for agent workflows. See [Box CCG guide](https://developer.box.com/guides/authentication/client-credentials). |
+| **Per-user agent** (acts as the logged-in user) | **OAuth 2.0** | What the official remote MCP uses. Each agent action is attributed and audited to that user. |
+| Migrating from JWT | Stick with JWT or switch to CCG | JWT still works; CCG is simpler for new builds. |
+
+The plugin itself doesn't manage auth — it invokes whatever Box MCP your agent has configured. Use the matrix above to pick the right path before connecting.
+
+### For non-Claude agent frameworks
+
+Box maintains integrations into popular agent frameworks. The cloud plugin's skills can coexist with these:
+
+| Framework | Box integration | Notes |
+|---|---|---|
+| **LangChain (Python)** | [`langchain-box`](https://python.langchain.com/docs/integrations/providers/box/) — `BoxLoader`, `BoxRetriever`, `BoxBlobLoader` | Maintained by `box-community`. Auth: Dev Token / JWT / CCG. |
+| **LlamaIndex** | [`llama-index-readers-box`](https://docs.llamaindex.ai/en/stable/api_reference/readers/box/) — `BoxReader`, `BoxReaderTextExtraction`, `BoxReaderAIPrompt`, `BoxReaderAIExtract` | First-party in the LlamaIndex monorepo. Auth: CCG / JWT / OAuth 2.0 / Dev Token. |
+| **CrewAI / AutoGen / MS Agent Framework** | No first-party Box integration. Route through MCP, official SDK, or LangChain tools. | |
+
+If you're building outside Claude entirely, you may also want Box's official SDKs (Python / Node / Java / .NET / iOS — see [Box SDKs index](https://developer.box.com/sdks-and-tools)). All actively maintained at v10, support CCG out of the box.
 
 ### Path 1 — Claude Code (plugin)
 

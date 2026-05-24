@@ -152,6 +152,45 @@ If you're seeing dual templates (`boxMemory` and `agentMemory` both exist on the
 
 ---
 
+## 7. Box Hubs have an indexing warm-up window (parallels metadata templates)
+
+**Symptom:** You create a new Box Hub (Enterprise Plus), add files via `box-init --as-hub` or `manage-items`, then immediately call `POST /2.0/ai/ask` with `items.type=hubs`. The query returns empty — even though the Hub definitively has the files.
+
+**Cause:** Same shape as Note 3 (metadata templates): Box's Hubs Q&A relies on a search/embedding index. Newly-created Hubs and recently-added items need indexing time before AI Ask returns non-empty results. The 20,000-file-per-Hub cap is documented; the indexing latency for fresh content is not.
+
+**Workaround for `box-init --as-hub`:**
+
+- Create the Hub.
+- Add the initial file set.
+- Surface to the user: *"Hub `<name>` created. AI Q&A over this Hub may take several minutes before returning results for newly-added files. The `_index.json` fallback path is unaffected."*
+- Don't block setup on the warm-up completing.
+
+**Workaround for `box-ai-recall`:**
+
+- If `mdfilters` returns sparse results AND the workspace is Hub-backed AND the Hub was created or had items added recently, fall through to file-set Q&A (multi-doc Ask, up to 25 files) instead of Hubs Q&A.
+- Mention this fallback when it fires.
+
+**Detection:** Track `hub_created_at` and `hub_last_item_added_at` in `_box-memory.json`. If either is within the last ~10 minutes, prefer the file-set path over the Hub path.
+
+**Tracking:** Box docs at [Hubs API use cases](https://developer.box.com/guides/hubs-api/use-cases) describe the Hub model but don't quantify indexing latency. Update this note when Box publishes guidance.
+
+---
+
+## 8. Box SDK v10.6.0+ search content-type `tags` is a breaking change
+
+**Symptom:** You upgrade the Box Python or Node SDK to v10.6.0 (April 2026 release) and `search_files_keyword` calls with `content_type='tags'` start behaving differently — either returning different result sets, rejecting the value, or matching against a different field.
+
+**Cause:** Per Box's changelog 2026-04-01: *"Correction to search content type `tags` to match the public API."* The SDK had been sending a value that diverged from what the API actually accepts. v10.6.0+ aligns SDK behavior with the API.
+
+**Workaround:**
+- If you've pinned an older SDK version (pre-v10.6.0), no action needed; behavior is unchanged.
+- If upgrading to v10.6.0+, audit any code paths that pass `content_type='tags'` in `search_files_keyword` calls. Re-test against your data.
+- This plugin's skills don't currently use the `tags` content-type filter, so no internal action needed. But users wrapping the plugin's recall via the SDK should know.
+
+**Tracking:** [Box Developer Changelog](https://developer.box.com/changelog) — search for 2026-04-01 entry.
+
+---
+
 ## When you find another quirk
 
 Add a new numbered section here following the same shape:

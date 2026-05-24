@@ -1,6 +1,6 @@
 ---
 name: box-team
-description: Add or manage a team subtree in a box-memory workspace. Creates team folders with their own memories, files, and index — and tracks teams in workspace config. Box folder ACLs are the real isolation boundary; this skill creates structure only. Use when the user wants to create a team, list teams, inspect a team's contents, find cross-team conflicts, or remove a team.
+description: Add or manage a team subtree in a box-memory workspace. Creates team folders with their own memories, files, and index - and tracks teams in workspace config. Box folder ACLs are the real isolation boundary; this skill creates structure only. Use when the user wants to create a team, list teams, inspect a team's contents, find cross-team conflicts, or remove a team.
 argument-hint: "<create|ls|inspect|conflicts|remove> [name]"
 ---
 

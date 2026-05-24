@@ -40,6 +40,16 @@ By default, exclude `status: superseded` and `status: archived`. Include with `-
 
 If folder's `modified_at` from Box is newer than `_index.json.updated_at`, surface a warning: "The index for `<folder>` may be stale. Run `/box-index-rebuild` to refresh." Still return what the index has — only fresh writes are at risk.
 
+## Sparse-results AI fallback (Business+ only, opt-in)
+
+If exact-lookup paths (steps 3-6 above) return 0-2 results for a free-text or open-ended query, AND `_box-memory.json.settings.ai_recall_enabled` is `true`, AND the tier supports Box AI (Business+ with AI Units available):
+
+- Surface to the user: *"Local index returned <N> results. Want me to try Box AI semantic recall? `/box-ai-recall <query>` — costs AI Units."*
+- If the user says yes (or has set `settings.ai_recall_auto_fallback: true`), invoke `box-ai-recall` automatically.
+- Otherwise return the local results as-is plus the suggestion.
+
+Do NOT auto-call `box-ai-recall` for queries that look exact (ID, wikilink, slug) — those should always go through the local index path. Only for ambiguous free-text where local recall genuinely struggled.
+
 ## Errors to surface clearly
 
 - **No workspace** → run `/box-init`.
