@@ -1,3 +1,17 @@
+<!--
+  This file is the single source of truth for Box account tier capabilities
+  and the plugin's tier-aware fallback paths. Both mrdulasolutions/BOX
+  (cloud variant) and mrdulasolutions/BOX-Onprem (air-gapped variant) read
+  from it.
+
+  The on-prem repo pins to a specific commit SHA of this file via its
+  .schema-pin file, then syncs into its synced/ directory via
+  scripts/sync-shared-refs.sh.
+
+  Changes to this matrix must land in mrdulasolutions/BOX first; bumping
+  the pin in BOX-Onprem is a separate, reviewable PR.
+-->
+
 # Box tier capability matrix
 
 How tier affects what the plugin can do — and which fallback paths it uses where features aren't available.

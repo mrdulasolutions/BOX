@@ -1,3 +1,16 @@
+<!--
+  This file is the single source of truth for the box-memory architecture
+  and design rationale. Both mrdulasolutions/BOX (cloud variant) and
+  mrdulasolutions/BOX-Onprem (air-gapped variant) read from it.
+
+  The on-prem repo pins to a specific commit SHA of this file via its
+  .schema-pin file, then syncs into its synced/ directory via
+  scripts/sync-shared-refs.sh.
+
+  Changes to this architecture doc must land in mrdulasolutions/BOX first;
+  bumping the pin in BOX-Onprem is a separate, reviewable PR.
+-->
+
 # Architecture
 
 The design rationale behind box-memory. Read this if you want to understand *why* the plugin works the way it does — what tradeoffs were made and what alternatives were rejected.

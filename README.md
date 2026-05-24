@@ -2,6 +2,8 @@
 
 **Use Box.com as agent memory + file storage. For any AI agent.**
 
+> **Looking for air-gapped / on-prem use?** See [`mrdulasolutions/BOX-Onprem`](https://github.com/mrdulasolutions/BOX-Onprem). It uses Box Drive's local filesystem mount instead of the Box API — no outbound network calls to Box from the agent runtime during skill execution. Same agent-memory model; different backend; intended for HIPAA / FedRAMP / ITAR workflows where the data path through Box must be air-gapped.
+
 A skill bundle that turns any Box account into a durable, multi-team, audit-friendly memory substrate. Ships in four forms so any agent platform can use it:
 
 - **Claude Code plugin** — git clone or unzip into `~/.claude/plugins/box-memory/`. All skills and `/box-*` commands available.
@@ -37,6 +39,17 @@ The plugin adds the agent-memory layer on top: schema, index, companions, recall
 | **Index files** | Per-folder `_index.json` mapping title/slug/tag/wikilink → file ID. Sidesteps Box's 10-min search indexing lag. | All tiers |
 | **Metadata templates** | Optional. On Business+, frontmatter fields are promoted to Box metadata for SQL-like queries. | Business+ |
 | **Multi-team isolation** | Folder-ACL-based. Each team gets its own subtree with its own index. | All tiers |
+
+---
+
+## Two variants of this plugin
+
+| Variant | Repo | Backend | When to use |
+|---|---|---|---|
+| `box-memory` (this repo) | [`mrdulasolutions/BOX`](https://github.com/mrdulasolutions/BOX) | Box MCP (network) | Agent works from any device with internet; cloud-mode features like Business+ metadata templates |
+| `box-memory-onprem` | [`mrdulasolutions/BOX-Onprem`](https://github.com/mrdulasolutions/BOX-Onprem) | Local Box Drive filesystem | Skills make zero outbound calls to Box; HIPAA / FedRAMP / ITAR-compliant data path |
+
+You can install both — they don't conflict. Plugin namespace disambiguates: `box-memory:box-init` vs `box-memory-onprem:box-init`.
 
 ---
 

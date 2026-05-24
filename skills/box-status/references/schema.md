@@ -1,3 +1,16 @@
+<!--
+  This file is the single source of truth for the box-memory workspace schema.
+  Both mrdulasolutions/BOX (cloud variant) and mrdulasolutions/BOX-Onprem
+  (air-gapped variant) read from it.
+
+  The on-prem repo pins to a specific commit SHA of this file via its
+  .schema-pin file, then syncs into its synced/ directory via
+  scripts/sync-shared-refs.sh.
+
+  Changes to this schema must land in mrdulasolutions/BOX first; bumping
+  the pin in BOX-Onprem is a separate, reviewable PR.
+-->
+
 # Schema reference
 
 Three file types live in a box-memory workspace: **memories**, **companions** (a special kind of memory), and **indexes**. Plus one workspace-level config. This document is the canonical reference; skills should follow it exactly.

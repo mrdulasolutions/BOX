@@ -1,3 +1,17 @@
+<!--
+  This file is the single source of truth for box-memory operational quirks
+  and workarounds. Both mrdulasolutions/BOX (cloud variant) and
+  mrdulasolutions/BOX-Onprem (air-gapped variant) read from it; on-prem
+  has its own additional notes file for filesystem-mode-specific quirks.
+
+  The on-prem repo pins to a specific commit SHA of this file via its
+  .schema-pin file, then syncs into its synced/ directory via
+  scripts/sync-shared-refs.sh.
+
+  Changes to these notes must land in mrdulasolutions/BOX first; bumping
+  the pin in BOX-Onprem is a separate, reviewable PR.
+-->
+
 # Operational notes
 
 Findings from live testing of box-memory against a real Box account that the canonical reference docs don't already cover. Read this if you're hitting unexpected behavior — most of these are upstream quirks (Box, OAuth, MCP) rather than plugin bugs.
