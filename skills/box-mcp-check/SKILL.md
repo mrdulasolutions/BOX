@@ -1,7 +1,7 @@
 ---
 name: box-mcp-check
-description: Verify the connected Box MCP server. Confirms whether the user is on Box's official remote MCP at mcp.box.com (recommended; required for Box AI tools) or a community/deprecated Box MCP. Reports OAuth scopes granted and tool coverage. Use when setting up box-memory for the first time, when AI tools fail with "tool not found" errors, or when the user asks which Box MCP they're using.
-argument-hint: "[--detail]"
+description: Verify the connected Box MCP server. Confirms whether the user is on Box's official remote MCP at mcp.box.com (recommended; required for Box AI tools) or a community/deprecated Box MCP. Reports OAuth scopes granted and tool coverage. Surfaces harness-specific setup steps (Hermes, OpenClaw, Codex, Cursor, custom) when Box OAuth needs manual configuration. Use when setting up box-memory for the first time, when AI tools fail with tool-not-found errors, when OAuth fails with 401 or no-auth symptoms, or when the user asks which Box MCP they are using.
+argument-hint: "[--detail] [--harness=auto|claude|hermes|generic]"
 ---
 
 # /box-mcp-check
@@ -10,17 +10,30 @@ argument-hint: "[--detail]"
 
 Audit the user's Box MCP connection. The cloud plugin works against any Box MCP that exposes basic file operations, but only Box's **official remote MCP at `mcp.box.com`** exposes the full toolset (Box AI Ask, AI Extract, AI Agents, Hubs, Doc Gen).
 
-This skill detects which MCP is connected and reports the gaps — pushing users toward the canonical surface.
+This skill detects which MCP is connected and reports the gaps — pushing users toward the canonical surface. For non-Claude harnesses (Hermes, OpenClaw, Codex, Cursor, custom) that don't transparently negotiate OAuth, the skill surfaces harness-specific setup walkthroughs from `references/harness-oauth-setup.md`.
 
 ## Usage
 
 ```
-/box-mcp-check [--detail]
+/box-mcp-check [--detail] [--harness=auto|claude|hermes|generic]
 ```
 
 Examples:
-- `/box-mcp-check` — quick summary
+- `/box-mcp-check` — quick summary, auto-detect harness
 - `/box-mcp-check --detail` — full tool inventory and scope diff vs the official MCP
+- `/box-mcp-check --harness=hermes` — surface Hermes-specific OAuth setup steps (use when Hermes reports `Auth: none` or 401)
+- `/box-mcp-check --harness=generic --detail` — generic non-Claude harness setup walkthrough
+
+### `--harness` flag
+
+Controls which setup narrative the skill surfaces when the MCP is misconfigured or missing:
+
+| Value | Meaning |
+|---|---|
+| `auto` (default) | Probe the connected MCP. If it works, report status. If it 401s with `Auth: none`-style failure, suggest re-running with `--harness=hermes` or `--harness=generic`. |
+| `claude` | Force the Claude Code / Cowork narrative — point to Settings → Connectors → Box. Use this when running under Claude. |
+| `hermes` | Force the Hermes narrative — Box developer console steps, `~/.hermes/config.yaml` block with `auth: oauth` gotcha, post-OAuth reload requirement. |
+| `generic` | Manual OAuth walkthrough for any non-Claude harness (OpenClaw, Codex, Cursor, custom). Asks the user for their harness's redirect URI and config location. |
 
 ## What to do
 
@@ -143,11 +156,58 @@ The self-hosted variant still works for basics but won't get future Box AI featu
 [same steps as the not-on-official case above]
 ```
 
+## Harness-specific setup surfacing
+
+When invoked with `--harness=<name>` (or auto-detection identifies a non-Claude harness), surface the relevant section of `references/harness-oauth-setup.md`. Key behaviors per harness:
+
+### `--harness=hermes`
+
+Surface the Hermes section. Highlight three things the user will trip on otherwise:
+
+1. **Box doesn't support DCR.** Auto-registration against `mcp.box.com` returns 401. User must pre-create a Box Custom App.
+2. **The `auth: oauth` flag is required** in `~/.hermes/config.yaml` *in addition to* the `oauth:` credentials block. Without the top-level `auth: oauth` key, `hermes mcp test` reports `Auth: none` and 401s silently — even though the credentials block parsed.
+3. **Post-OAuth reload required.** Hermes loads MCP tools at session start (prompt caching). Even after a successful OAuth flow, box-* skills in the current session won't see the Box toolset until `/new` or `/reload-mcp`.
+
+Required redirect URI: `http://127.0.0.1:8723/callback` (exact match in the Box developer console).
+
+### `--harness=generic`
+
+Surface the Generic section. Before walking through steps, ask the user three questions:
+
+1. What is the harness's OAuth redirect URI?
+2. Where is the harness's MCP config file?
+3. Does the harness need an explicit auth-type flag separate from the credentials block? (Hermes does; not all do.)
+
+Then walk through the Box developer console setup with the user-provided redirect URI substituted.
+
+### `--harness=auto` with 401 / `Auth: none` symptom
+
+If the connected MCP returns 401, or the harness's `mcp test` output includes "Auth: none" or "auth: none", emit:
+
+```
+The connected Box MCP rejected authentication. This usually means OAuth wasn't fully set up.
+
+If you're running under:
+  - Claude Code / Cowork: run /box-mcp-check --harness=claude
+  - Hermes:              run /box-mcp-check --harness=hermes  (most likely cause: missing auth: oauth flag)
+  - OpenClaw / Codex / Cursor / custom: run /box-mcp-check --harness=generic
+
+Each surfaces the right setup walkthrough for that harness.
+```
+
+### Model requirements for setup
+
+The OAuth setup flow involves: dev-console navigation, copying credentials, editing config files, diagnosing silent failure modes. **Verified with Claude 4.5+**. Weaker models may stall, especially on the `auth: oauth` silent failure in Hermes.
+
+If the user reports they're on a smaller/older model and setup is failing, suggest: do the one-time setup in a Claude 4.5+ session, then any model can use the connection afterwards (tokens persist in the harness config).
+
 ## When to invoke
 
 - At first install / `/box-init` (called internally to confirm setup is correct)
 - When any AI-powered skill returns "tool not found" or "scope insufficient"
 - When the user asks "which Box MCP am I using?"
+- When OAuth fails — 401, `Auth: none`, "client not registered", or any auth-related error
+- When the user identifies a non-Claude harness (Hermes, OpenClaw, Codex, Cursor, custom)
 - Periodically (the skill is cheap; running on session start is fine)
 
 ## When NOT to invoke
@@ -175,3 +235,4 @@ The self-hosted variant still works for basics but won't get future Box AI featu
 - [Box CCG guide (for non-MCP integrations)](https://developer.box.com/guides/authentication/client-credentials)
 - references/tier-matrix.md — what each tier unlocks
 - references/operational-notes.md — including stale-OAuth-token diagnosis
+- references/harness-oauth-setup.md — per-harness OAuth setup (Hermes, generic, OpenClaw, Codex, Cursor)

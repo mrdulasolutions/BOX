@@ -4,6 +4,38 @@ All notable changes to box-memory will be documented here.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-05-25
+
+### Added — non-Claude harness OAuth setup support
+
+Field finding from Hermes integration: Box's OAuth server does **not** support Dynamic Client Registration (DCR). Every non-Claude harness (Hermes, OpenClaw, Codex, Cursor, custom) must pre-register a Box Custom App in the developer console, then configure the harness's MCP server block with the resulting `client_id`/`client_secret`. The plugin now surfaces this walkthrough.
+
+- **`references/harness-oauth-setup.md`** — new source-of-truth doc keyed by harness name. Documents Box developer console steps, required scopes (by both Box-console label AND OAuth scope string), and per-harness redirect URIs, config locations, and silent-failure modes. Hermes section captures the verified-working flow from a 2026-05-25 Claude 4.7 setup.
+
+- **`/box-mcp-check --harness=auto|claude|hermes|generic`** — new flag selects which setup narrative to surface. `auto` (default) preserves current behavior. `hermes` surfaces Hermes-specific config including the `auth: oauth` silent-failure gotcha and post-OAuth `/reload-mcp` requirement. `generic` walks through manual OAuth for any non-Claude harness.
+
+### The "Auth: none" silent failure
+
+Hermes config requires both:
+- `oauth:` block with `client_id`, `client_secret`, `redirect_port`
+- Top-level `auth: oauth` key (separate from the credentials block)
+
+Without the top-level `auth: oauth` key, `hermes mcp test box` reports `Auth: none` and the server 401s — even though credentials parsed correctly. This is the #1 setup failure mode for Hermes users; the new harness doc and `/box-mcp-check --harness=hermes` both call it out prominently.
+
+### Model floor for setup
+
+The OAuth setup flow (browser dev-console → copy creds → edit YAML → debug silent failures → retry) requires **Claude 4.5+ or equivalent**. Smaller/older models may stall on the silent failure modes. For weak-model deployments: do the one-time setup in a Claude 4.5+ session; any model can use the connection afterwards (tokens persist in harness config).
+
+### Verification
+
+- `claude plugin validate` — PASSES
+- Hermes + Claude 4.7 + Box Custom App + 30 tools live (2026-05-25)
+- Existing Claude Code / Cowork installs: zero behavior change (the new flag is opt-in; `--harness=auto` matches prior default)
+
+### Why patch not minor
+
+The new flag is additive and optional. No existing functionality changed. Plugin shape, manifest fields, and all 12 skill behaviors are unchanged for users not invoking the new flag.
+
 ## [0.1.0] - 2026-05-24
 
 ### The Box-native release — Box AI, Hubs, AI Studio, official MCP
